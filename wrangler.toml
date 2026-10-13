@@ -19,7 +19,7 @@ id = "aee4cb950b0a4cf680c9c3b3842d3e10"
 # both the apex and www hostnames, so both must be listed — an exact match
 # against one of them rejects every submission from the other.
 ALLOWED_ORIGIN = "https://rafifhardja.xyz,https://www.rafifhardja.xyz"
-TO_EMAIL = "abdurrahmanarrafif651@email.com"
+TO_EMAIL = "abdurrahmanarrafif651@gmail.com"
 FROM_EMAIL = "onboarding@resend.dev"
 
 # Secrets — never in this file. Dashboard → Worker → Settings → Variables,
