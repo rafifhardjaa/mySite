@@ -81,11 +81,12 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
       <a
         href={teaserHref}
         {...teaserExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}}
-        class="group flex items-center text-left sm:justify-end"
+        class="group flex flex-col text-left sm:items-end sm:text-right"
       >
+        <span class="text-xs text-text-muted">{t('footer.latestPlayed')}</span>
         {
           nowSpinning ? (
-            <>
+            <span class="mt-2 flex items-center gap-3">
               {nowSpinning.data.artwork && (
                 <img
                   src={nowSpinning.data.artwork}
@@ -103,7 +104,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
                 </span>
                 {artist && <span class="text-xs text-text-muted">{artist}</span>}
               </span>
-            </>
+            </span>
           ) : (
             <span class="text-sm text-text transition-colors group-hover:text-accent">
               {SITE.role[lang]}
