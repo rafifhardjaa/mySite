@@ -30,6 +30,10 @@ const handle = SITE.github.replace(/^https?:\/\/github\.com\//, '@')
 const listening = await getNowItems('listening')
 const nowSpinning = listening.find((item) => item.data.artwork) ?? listening[0]
 const [track, artist] = (nowSpinning?.data.title[lang] ?? '').split(' — ')
+// A verified store URL turns the teaser into an outbound music link;
+// otherwise it stays an internal link to /now.
+const teaserHref = nowSpinning?.data.storeHref ?? localePath(lang, '/now')
+const teaserExternal = Boolean(nowSpinning?.data.storeHref)
 
 const columns: { headingKey: string; links: FooterLink[] }[] = [
   {
@@ -75,13 +79,13 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
       </div>
 
       <a
-        href={localePath(lang, '/now')}
-        class="group flex flex-col text-left sm:items-end sm:text-right"
+        href={teaserHref}
+        {...teaserExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}}
+        class="group flex items-center text-left sm:justify-end"
       >
-        <span class="text-xs text-text-muted">{t('footer.currently')}</span>
         {
           nowSpinning ? (
-            <span class="mt-2 flex items-center gap-3">
+            <>
               {nowSpinning.data.artwork && (
                 <img
                   src={nowSpinning.data.artwork}
@@ -89,16 +93,17 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
                   width="40"
                   height="40"
                   loading="lazy"
-                  class="h-10 w-10 rounded-md border border-border object-cover"
+                  class="h-10 w-10 shrink-0 rounded-md border border-border object-cover"
                 />
               )}
-              <span class="flex flex-col">
-                <span class="text-sm text-text transition-colors group-hover:text-accent">
+              <span class="ml-3 flex flex-col sm:items-end">
+                <span class="inline-flex items-center gap-1 text-sm text-text transition-colors group-hover:text-accent">
                   {track}
+                  {teaserExternal && <Icon name="arrow-up-right" class="h-3 w-3" />}
                 </span>
                 {artist && <span class="text-xs text-text-muted">{artist}</span>}
               </span>
-            </span>
+            </>
           ) : (
             <span class="text-sm text-text transition-colors group-hover:text-accent">
               {SITE.role[lang]}
