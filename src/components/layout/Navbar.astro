@@ -46,10 +46,10 @@ const localeOptions = getLocaleOptions({
 <nav
   id="site-nav"
   data-nav
-  class="fixed inset-x-0 top-0 z-50 hidden px-0 pt-0 transition-[transform,opacity,padding] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:px-6 data-[floating]:pt-4 md:block"
+  class="nav-bar fixed inset-x-0 top-0 z-50 hidden px-0 pt-0 data-[floating]:px-6 data-[floating]:pt-4 md:block"
 >
   <div
-    class="mx-auto flex layout-container items-center justify-between rounded-none border border-transparent bg-bg px-5 py-2 transition-[border-radius,border-color,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-sm data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+    class="nav-bar-inner mx-auto flex layout-container items-center justify-between rounded-none border border-transparent bg-bg px-5 py-2 data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-sm data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
   >
     <div class="flex items-center gap-5">
       {
@@ -99,10 +99,10 @@ const localeOptions = getLocaleOptions({
 
 <div
   data-nav-dock
-  class="fixed inset-x-0 bottom-0 z-50 px-0 pb-0 transition-[transform,opacity,padding] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:px-4 data-[floating]:pb-4 md:hidden"
+  class="nav-bar fixed inset-x-0 bottom-0 z-50 px-0 pb-0 data-[floating]:px-4 data-[floating]:pb-4 md:hidden"
 >
   <div
-    class="mx-auto flex max-w-md items-center justify-between rounded-none border border-transparent bg-bg px-3 py-2 transition-[border-radius,border-color,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-lg data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+    class="nav-bar-inner mx-auto flex max-w-md items-center justify-between rounded-none border border-transparent bg-bg px-3 py-2 data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-lg data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
   >
     <div class="flex items-center gap-0.5">
       {
@@ -193,6 +193,38 @@ const localeOptions = getLocaleOptions({
     </div>
   </div>
 </div>
+
+<style>
+  /* Detaching and settling want different tempos. Responding to a scroll
+     should feel immediate, so becoming floating is quick; drifting back to the
+     attached state after the idle timer is unhurried. One CSS block covers both
+     because the attribute is what flips the duration. */
+  .nav-bar {
+    transition-property: transform, opacity, padding;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-bar[data-floating] {
+    transition-duration: 280ms;
+  }
+
+  .nav-bar:not([data-floating]) {
+    transition-duration: 420ms;
+  }
+
+  .nav-bar-inner {
+    transition-property: border-radius, border-color, box-shadow, background-color;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-bar-inner[data-floating] {
+    transition-duration: 280ms;
+  }
+
+  .nav-bar-inner:not([data-floating]) {
+    transition-duration: 420ms;
+  }
+</style>
 
 <script>
   const nav = document.getElementById('site-nav')

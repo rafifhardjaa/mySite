@@ -34,7 +34,7 @@ const totalNotes = allNotes.length
 
 <PageLayout title={SITE.identity[lang]} description={SITE.description[lang]}>
   <div class="mx-auto layout-container px-6 pt-8 pb-16">
-    <section class="mb-16 flex flex-col gap-6 sm:flex-row sm:items-start">
+    <section class="mb-20 flex flex-col gap-6 sm:flex-row sm:items-start">
       <Pfp src={pfp1} hoverSrc={pfp2} alt={SITE.name} />
 
       <div>
@@ -73,7 +73,7 @@ const totalNotes = allNotes.length
 
     {
       projects.length > 0 && (
-        <section class="mb-16">
+        <section class="mb-20">
           <SectionLabel label={t('home.projects.heading')} class="mb-8" />
           <div class="space-y-6">
             {projects.map((project) => (
@@ -119,7 +119,7 @@ const totalNotes = allNotes.length
       )
     }
 
-    <div class="mt-16">
+    <div class="mt-20">
       <Gallery lang={lang} />
     </div>
   </div>

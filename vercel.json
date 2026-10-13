@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/:route((?!_astro/|.*\\.[a-zA-Z0-9]+$).*)",
+      "headers": {
+        "accept": "text/markdown"
+      },
+      "destination": "/:route/index.md"
+    }
+  ]
+}

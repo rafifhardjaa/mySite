@@ -7,6 +7,9 @@
 @import '@fontsource-variable/source-serif-4';
 @plugin '@tailwindcss/typography';
 
+/* Vertical rhythm scale. Keep new spacing on this scale so every page reads
+   the same: 80px between major page sections, 48px for medium gaps (rules,
+   disclosure, intro-to-form), 32-40px inside a section, 12-16px under labels. */
 @theme {
   --color-bg: #faf9f5;
   --color-bg-subtle: #f2f1ec;
