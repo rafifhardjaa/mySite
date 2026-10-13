@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import icon from 'astro-icon'
 
 export default defineConfig({
-  site: 'https://yourdomain.com',
+  site: 'https://rafifhardja.xyz',
   integrations: [mdx(), sitemap(), icon()],
   vite: {
     plugins: [tailwindcss()],

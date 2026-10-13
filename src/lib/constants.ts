@@ -23,7 +23,7 @@ export const SITE = {
     en: 'Available now for work, internships, or collaboration',
     id: 'Tersedia sekarang untuk bekerja, magang, atau kolaborasi',
   },
-  url: 'https://yourdomain.com',
+  url: 'https://rafifhardja.xyz',
   github: 'https://github.com/rafifhardjaa',
   linkedin: 'https://linkedin.com/in/yourusername',
   email: 'abdurrahmanarrafif651@email.com',

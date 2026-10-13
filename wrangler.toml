@@ -17,7 +17,7 @@ id = "aee4cb950b0a4cf680c9c3b3842d3e10"
 [vars]
 # The exact origin the site is served from. Requests from anywhere else are
 # rejected before any work is done. Must match the deployed hostname.
-ALLOWED_ORIGIN = "https://yourdomain.com"
+ALLOWED_ORIGIN = "https://rafifhardja.xyz"
 
 TO_EMAIL = "you@email.com"
 FROM_EMAIL = "Portfolio <hello@yourdomain.com>"
