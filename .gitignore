@@ -22,7 +22,7 @@ todo.md
 # OS / editors
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
 !.vscode/extensions.json
 .idea/
 
