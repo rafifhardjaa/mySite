@@ -57,12 +57,12 @@ const headings = [
   ...rows.map((row) => ({ depth: 2, slug: row.id, text: t(row.titleKey) })),
 ]
 
-// Rendered through Shiki like the note pages, so the colours match the rest
-// of the site instead of falling back to unstyled body text.
-const SETUP_SNIPPET = `# Daily apps
-brew install --cask visual-studio-code firefox bruno postman gitkraken dbeaver-community obsidian orbstack herd openvpn-connect orca
+// One box per command, matching the note pages: each block gets its own
+// Terminal frame and Copy button instead of sharing one.
+const SETUP_DAILY = `# Daily apps
+brew install --cask visual-studio-code firefox bruno postman gitkraken dbeaver-community obsidian orbstack herd openvpn-connect orca`
 
-# CLI tools I wrote about
+const SETUP_CLI = `# CLI tools I wrote about
 brew install mole gitleaks`
 ---
 
@@ -93,7 +93,10 @@ brew install mole gitleaks`
     {t('uses.setupTitle')}
   </h2>
   <div data-code-enhance>
-    <Code code={SETUP_SNIPPET} lang="bash" />
+    <Code code={SETUP_DAILY} lang="bash" />
+  </div>
+  <div data-code-enhance>
+    <Code code={SETUP_CLI} lang="bash" />
   </div>
 
   <script>
