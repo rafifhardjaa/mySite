@@ -18,7 +18,6 @@ id = "aee4cb950b0a4cf680c9c3b3842d3e10"
 # The exact origin the site is served from. Requests from anywhere else are
 # rejected before any work is done. Must match the deployed hostname.
 ALLOWED_ORIGIN = "https://rafifhardja.xyz"
-
 TO_EMAIL = "abdurrahmanarrafif651@email.com"
 FROM_EMAIL = "onboarding@resend.dev"
 
