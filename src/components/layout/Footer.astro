@@ -1,5 +1,10 @@
 ---
 import Icon from '@/components/ui/Icon.astro'
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+import coverLemonade from '@/assets/covers/lemonade.jpg'
+import coverCrazyWorld from '@/assets/covers/crazy-world.jpg'
+import coverFreudian from '@/assets/covers/freudian.jpg'
 import { SITE } from '@/lib/constants'
 import { getNowItems } from '@/lib/now-items'
 import { getLang, useTranslation, localePath, type LangKey } from '@/i18n/utils'
@@ -23,12 +28,18 @@ const t = useTranslation(lang)
 const handle = SITE.github.replace(/^https?:\/\/github\.com\//, '@')
 
 // Footer teaser for /now: the top "on repeat" track with its cover.
-// Prefers the first listening entry that has artwork; falls back to the
-// role line when there is no listening entry at all. Titles use the
-// "Track — Artist" convention; without the separator the whole title
-// renders as a single line.
+// Covers are vendored in src/assets/covers: the audit flags raw <img>,
+// and live artwork search misses real tracks — so each cover is verified
+// once by hand and shipped with the site. Keyed by collection entry id
+// (glob ids carry no file extension, e.g. "listening-3").
+const COVERS: Record<string, ImageMetadata> = {
+  'listening-1': coverLemonade,
+  'listening-2': coverCrazyWorld,
+  'listening-3': coverFreudian,
+}
 const listening = await getNowItems('listening')
-const nowSpinning = listening.find((item) => item.data.artwork) ?? listening[0]
+const nowSpinning = listening[0]
+const cover = nowSpinning ? COVERS[nowSpinning.id] : undefined
 const [track, artist] = (nowSpinning?.data.title[lang] ?? '').split(' — ')
 // A verified store URL turns the teaser into an outbound music link;
 // otherwise it stays an internal link to /now.
@@ -87,13 +98,14 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
         {
           nowSpinning ? (
             <span class="mt-2 flex items-center gap-3">
-              {nowSpinning.data.artwork && (
-                <img
-                  src={nowSpinning.data.artwork}
+              {cover && (
+                <Image
+                  src={cover}
                   alt=""
-                  width="40"
-                  height="40"
+                  width={40}
+                  height={40}
                   loading="lazy"
+                  decoding="async"
                   class="h-10 w-10 shrink-0 rounded-md border border-border object-cover"
                 />
               )}

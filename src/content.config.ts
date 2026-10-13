@@ -61,10 +61,6 @@ const nowItems = defineCollection({
     // External destination (book page, Substack, album on Last.fm…).
     // Internal note links use noteSlug so the locale prefix stays correct.
     href: z.string().url().optional(),
-    // Cover art for kind "listening" (Cover Art Archive front-250 URLs —
-    // verified by hand, never live-searched at build: song search misses
-    // real tracks like Beyoncé's "All Night"). Rendered in the footer.
-    artwork: z.string().url().optional(),
     // Verified store URL for the track (iTunes Store track page, checked by
     // hand — search misses real tracks, so never guess this). The footer
     // teaser links here instead of /now when present.
