@@ -130,5 +130,8 @@
   "resume.educationPlaceholder": "IT undergrad, Universitas PGRI Semarang. Self-taught in web development and systems design.",
   "settings.notTranslated": "Not available in this language yet",
   "toc.label": "On this page",
-  "footer.rss": "RSS Feed"
+  "footer.rss": "RSS Feed",
+  "contact.client.tooLong": "One of those fields is too long. Please shorten it and try again.",
+  "contact.client.turnstileMissing": "Please wait for the security check to finish, then try again.",
+  "contact.client.turnstileFailed": "The security check did not pass. Please try again."
 }

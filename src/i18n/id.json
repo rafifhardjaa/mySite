@@ -130,5 +130,8 @@
   "resume.educationPlaceholder": "S1 Teknik Informatika, Universitas PGRI Semarang. Belajar mandiri pengembangan web dan desain sistem.",
   "settings.notTranslated": "Belum tersedia dalam bahasa ini",
   "toc.label": "Di halaman ini",
-  "footer.rss": "Umpan RSS"
+  "footer.rss": "Umpan RSS",
+  "contact.client.tooLong": "Salah satu kolom terlalu panjang. Silakan dipersingkat lalu coba lagi.",
+  "contact.client.turnstileMissing": "Tunggu pemeriksaan keamanan selesai, lalu coba lagi.",
+  "contact.client.turnstileFailed": "Pemeriksaan keamanan tidak lolos. Silakan coba lagi."
 }

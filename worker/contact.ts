@@ -1,30 +1,42 @@
 /**
- * Cloudflare Worker — contact form endpoint for the portfolio.
+ * Cloudflare Worker — serves the portfolio site and its contact endpoint.
  *
- * Pipeline (in order, cheapest check first):
+ * The same Worker does both jobs. Requests that match a file in dist/ are
+ * served as static assets before this code ever runs (see [assets] in
+ * wrangler.toml); only /api/* reaches fetch(). That keeps the contact form
+ * same-origin, so there is no cross-site CORS dance — the Origin check below
+ * is defense in depth, not the mechanism.
+ *
+ * Contact pipeline (in order, cheapest check first):
  *   1. honeypot field      — free, silent, catches naive bots
- *   2. Cloudflare rate limit binding — stops bursts before any crypto
- *   3. Turnstile token verify — the real bot check
+ *   2. KV rate limit       — stops bursts before any network call
+ *   3. Turnstile verify    — the real bot check, hostname-bound
  *   4. field validation + length caps
- *   5. Resend delivery
+ *   5. Resend delivery     — idempotent, so a retry cannot double-send
  *
  * DNS is not part of this. Cloudflare DNS only maps names to hosts; it does
  * not inspect form posts. Turnstile + rate limiting is what actually keeps
  * spam out of the inbox.
  *
- * Setup:
- *   wrangler.toml:
- *     [[kv_namespaces]]  binding = "RATE_LIMITER"  id = "<kv namespace>"
- *     [vars]
- *     RESEND_API_KEY = "re_..."
- *     TO_EMAIL       = "you@email.com"
- *     FROM_EMAIL     = "Portfolio <hello@yourdomain.com>"
- *     ALLOWED_ORIGIN = "https://yourdomain.com"
- *
- *   Secrets:
+ * Setup (dashboard values — never commit real ones):
+ *   wrangler.toml [vars]:
+ *     ALLOWED_ORIGIN = "https://<your-site>"
+ *     TO_EMAIL       = "<your-inbox>"
+ *     FROM_EMAIL     = "Portfolio <<verified-sender>>"
+ *   wrangler.toml [[kv_namespaces]]:
+ *     id = "<from: wrangler kv namespace create RATE_LIMITER>"
+ *   Secrets (dashboard → Worker → Settings → Variables, or CLI):
+ *     wrangler secret put RESEND_API_KEY
  *     wrangler secret put TURNSTILE_SECRET
  *
- * The client needs the matching public key as PUBLIC_TURNSTILE_SITE_KEY.
+ * Resend free tier: until a sending domain is verified, FROM must be
+ * onboarding@resend.dev and mail only reaches the account owner's inbox.
+ * Turnstile: dashboard → Turnstile → Add widget; the site key goes to the
+ * site build as PUBLIC_TURNSTILE_SITE_KEY, the secret key here.
+ *
+ * The client needs as build-time public values:
+ *   PUBLIC_CONTACT_ENDPOINT=/api/contact
+ *   PUBLIC_TURNSTILE_SITE_KEY=<turnstile site key>
  */
 
 interface Env {
@@ -36,12 +48,17 @@ interface Env {
   RATE_LIMITER: KVNamespace
 }
 
+const API_PATH = '/api/contact'
+
 const MAX_NAME = 120
 const MAX_EMAIL = 200
 const MAX_MESSAGE = 5000
 const RATE_LIMIT = { limit: 3, windowSeconds: 600 }
+const FETCH_TIMEOUT_MS = 8000
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+type Bucket = { count: number; resetAt: number }
 
 function json(body: unknown, status: number, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -67,10 +84,23 @@ function cors(request: Request, env: Env): Record<string, string> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url)
+
+    // Anything that is not the contact API is not ours. With [assets]
+    // configured, static files never reach this code in the first place.
+    if (url.pathname !== API_PATH) {
+      return json({ error: 'not_found' }, 404)
+    }
+
     const base = cors(request, env)
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: base })
     if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, base)
+
+    if (!env.RESEND_API_KEY || !env.TURNSTILE_SECRET || !env.TO_EMAIL || !env.FROM_EMAIL) {
+      console.error('contact worker misconfigured: a secret or mail var is missing')
+      return json({ error: 'misconfigured' }, 500, base)
+    }
 
     const origin = request.headers.get('origin') ?? ''
     if (origin !== env.ALLOWED_ORIGIN) return json({ error: 'bad_origin' }, 403, base)
@@ -96,63 +126,125 @@ export default {
     }
     if (!EMAIL_RE.test(email)) return json({ error: 'bad_email' }, 400, base)
 
-    // 2 — rate limit by client address, before spending a Turnstile verification
+    // 2 — fixed-window rate limit by client address, before spending a
+    // Turnstile verification. KV has no atomic counter, so a burst of exactly
+    // concurrent requests can each slip one extra send through; the window
+    // itself is exact, which is what matters for sustained abuse.
     const ip = request.headers.get('cf-connecting-ip') ?? 'unknown'
-    const bucket = `rl:${ip}`
-    const current = await env.RATE_LIMITER.get(bucket, 'json')
+    const key = `rl:${ip}`
+    const now = Date.now()
 
-    if (current && current.count >= RATE_LIMIT.limit) {
-      return json(
-        { error: 'rate_limited', retryAfter: RATE_LIMIT.windowSeconds },
-        429,
-        { ...base, 'retry-after': String(RATE_LIMIT.windowSeconds) },
-      )
+    let bucket: Bucket | null
+    try {
+      bucket = await env.RATE_LIMITER.get<Bucket>(key, 'json')
+    } catch (err) {
+      console.error('rate-limit read failed', err)
+      return json({ error: 'rate_limit_unavailable' }, 503, base)
     }
 
-    await env.RATE_LIMITER.put(
-      bucket,
-      JSON.stringify({ count: (current?.count ?? 0) + 1, first: current?.first ?? Date.now() }),
-      { expirationTtl: RATE_LIMIT.windowSeconds },
-    )
+    if (!bucket || now >= bucket.resetAt) {
+      bucket = { count: 0, resetAt: now + RATE_LIMIT.windowSeconds * 1000 }
+    }
+
+    if (bucket.count >= RATE_LIMIT.limit) {
+      const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000))
+      return json({ error: 'rate_limited', retryAfter }, 429, {
+        ...base,
+        'retry-after': String(retryAfter),
+      })
+    }
+
+    bucket.count += 1
+
+    try {
+      await env.RATE_LIMITER.put(key, JSON.stringify(bucket), {
+        expirationTtl: RATE_LIMIT.windowSeconds + 60,
+      })
+    } catch (err) {
+      console.error('rate-limit write failed', err)
+      return json({ error: 'rate_limit_unavailable' }, 503, base)
+    }
 
     // 3 — Turnstile
     if (!token) return json({ error: 'missing_turnstile' }, 400, base)
 
-    const verify = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        secret: env.TURNSTILE_SECRET,
-        response: token,
-        remoteip: ip,
-      }),
-    })
+    let verifyRes: Response
+    try {
+      verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          secret: env.TURNSTILE_SECRET,
+          response: token,
+          remoteip: ip,
+        }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      })
+    } catch (err) {
+      console.error('turnstile verify request failed', err)
+      return json({ error: 'verify_failed' }, 502, base)
+    }
 
-    if (!verify.ok) return json({ error: 'verify_failed' }, 502, base)
+    if (!verifyRes.ok) {
+      console.error(`turnstile verify upstream status ${verifyRes.status}`)
+      return json({ error: 'verify_failed' }, 502, base)
+    }
 
-    const verdict = (await verify.json()) as { success?: boolean }
-    if (!verdict.success) return json({ error: 'turnstile_failed' }, 403, base)
+    let verdict: { success?: boolean; hostname?: string; 'error-codes'?: string[] }
+    try {
+      verdict = (await verifyRes.json()) as typeof verdict
+    } catch (err) {
+      console.error('turnstile verify body was not JSON', err)
+      return json({ error: 'verify_failed' }, 502, base)
+    }
+
+    if (!verdict.success) {
+      console.error('turnstile rejected token', verdict['error-codes'] ?? [])
+      return json({ error: 'turnstile_failed' }, 403, base)
+    }
+
+    // A token minted for any other site is replayable here unless the hostname
+    // is checked. The expected host comes from ALLOWED_ORIGIN, so there is one
+    // value to keep correct, not two.
+    if (verdict.hostname) {
+      const expected = new URL(env.ALLOWED_ORIGIN).hostname
+      if (verdict.hostname !== expected) {
+        console.error(`turnstile hostname mismatch: got ${verdict.hostname}, want ${expected}`)
+        return json({ error: 'turnstile_failed' }, 403, base)
+      }
+    }
 
     // 4 + 5 — deliver
     const subject = `Portfolio contact — ${name}`
     const text = `From: ${name} <${email}>\n\n${message}\n`
 
-    const resend = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${env.RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: env.FROM_EMAIL,
-        to: [env.TO_EMAIL],
-        reply_to: email,
-        subject,
-        text,
-      }),
-    })
+    let resend: Response
+    try {
+      resend = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${env.RESEND_API_KEY}`,
+          // A retried request must not double-send the visitor's email.
+          'Idempotency-Key': crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          from: env.FROM_EMAIL,
+          to: [env.TO_EMAIL],
+          reply_to: email,
+          subject,
+          text,
+        }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS + 2000),
+      })
+    } catch (err) {
+      console.error('resend request failed', err)
+      return json({ error: 'delivery_failed' }, 502, base)
+    }
 
     if (!resend.ok) {
+      const detail = await resend.text().catch(() => '')
+      console.error(`resend status ${resend.status} ${detail.slice(0, 200)}`)
       return json({ error: 'delivery_failed' }, 502, base)
     }
 

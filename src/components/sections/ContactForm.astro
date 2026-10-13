@@ -28,6 +28,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   data-msg-success={t('contact.success')}
   data-msg-unconfigured={t('contact.unconfigured')}
   data-msg-rate-limited={t('contact.rateLimited')}
+  data-msg-too-long={t('contact.client.tooLong')}
+  data-msg-turnstile-missing={t('contact.client.turnstileMissing')}
+  data-msg-turnstile-failed={t('contact.client.turnstileFailed')}
 >
   <form id="contact-form" class="space-y-4" novalidate>
     <div class="grid gap-4 sm:grid-cols-2">
@@ -115,8 +118,20 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   const submit = element?.querySelector<HTMLButtonElement>('button[type="submit"]')
   const endpoint = form?.dataset.endpoint ?? ''
   const siteKey = form?.dataset.turnstile ?? ''
+  // Both values are build-time public vars. If either is missing the form was
+  // rendered disabled, and no submit path may re-enable it.
+  const isConfigured = Boolean(endpoint && siteKey)
 
-  type MessageKey = 'required' | 'badEmail' | 'failed' | 'success' | 'unconfigured' | 'rateLimited'
+  type MessageKey =
+    | 'required'
+    | 'badEmail'
+    | 'failed'
+    | 'success'
+    | 'unconfigured'
+    | 'rateLimited'
+    | 'tooLong'
+    | 'turnstileMissing'
+    | 'turnstileFailed'
 
   const messageKey: Record<MessageKey, string> = {
     required: 'msgRequired',
@@ -125,6 +140,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     success: 'msgSuccess',
     unconfigured: 'msgUnconfigured',
     rateLimited: 'msgRateLimited',
+    tooLong: 'msgTooLong',
+    turnstileMissing: 'msgTurnstileMissing',
+    turnstileFailed: 'msgTurnstileFailed',
   }
 
   function say(key: MessageKey, tone: 'ok' | 'error'): void {
@@ -141,6 +159,27 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     )
   }
 
+  type TurnstileApi = {
+    render: (el: Element, opts: Record<string, unknown>) => string
+    reset: (widgetId?: string) => void
+  }
+
+  let widgetId: string | undefined
+
+  // A token is single-use: after any submit — success or failure — the widget
+  // must be reset, or the next submit sends a consumed token and Turnstile
+  // starts rejecting a real person.
+  function resetWidget(): void {
+    const turnstile = (window as unknown as { turnstile?: TurnstileApi }).turnstile
+    if (!turnstile) return
+    try {
+      turnstile.reset(widgetId)
+    } catch {
+      // The widget may not have finished rendering. The next submit reads a
+      // fresh token, so a failed reset is harmless.
+    }
+  }
+
   // Turnstile is loaded lazily, only when this page actually renders a form.
   // The token is read fresh from the widget on every submit — a token captured
   // on page load can expire while the visitor is still typing.
@@ -154,10 +193,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     script.defer = true
     script.dataset.turnstile = ''
     script.onload = () => {
-      const turnstile = (
-        window as unknown as { turnstile?: { render: (el: Element, opts: unknown) => void } }
-      ).turnstile
-      turnstile?.render(widget, {
+      const turnstile = (window as unknown as { turnstile?: TurnstileApi }).turnstile
+      if (!turnstile || !widget) return
+      widgetId = turnstile.render(widget, {
         sitekey: siteKey,
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
       })
@@ -170,9 +208,26 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     loadTurnstile()
   }
 
+  // Worker error codes the visitor can act on get their own message. Anything
+  // else — including codes added by a future worker — falls back to the
+  // generic failure so the form never shows a blank status.
+  function workerMessage(code: string): MessageKey {
+    switch (code) {
+      case 'field_too_long':
+        return 'tooLong'
+      case 'missing_turnstile':
+      case 'turnstile_failed':
+        return 'turnstileFailed'
+      case 'rate_limited':
+        return 'rateLimited'
+      default:
+        return 'failed'
+    }
+  }
+
   element?.addEventListener('submit', async (event) => {
     event.preventDefault()
-    if (!endpoint) return say('unconfigured', 'error')
+    if (!isConfigured) return say('unconfigured', 'error')
 
     const data = new FormData(element)
     const name = String(data.get('name') ?? '').trim()
@@ -183,10 +238,14 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     if (!name || !email || !message) return say('required', 'error')
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say('badEmail', 'error')
 
+    const token = liveToken()
+    if (siteKey && !token) return say('turnstileMissing', 'error')
+
     if (submit) {
       submit.disabled = true
       submit.dataset.label = submit.textContent ?? ''
     }
+    element.setAttribute('aria-busy', 'true')
 
     try {
       const response = await fetch(endpoint, {
@@ -197,19 +256,37 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
           email,
           message,
           website,
-          turnstileToken: liveToken(),
+          turnstileToken: token,
         }),
       })
 
-      if (response.status === 429) return say('rateLimited', 'error')
-      if (!response.ok) return say('failed', 'error')
+      if (response.status === 429) {
+        resetWidget()
+        return say('rateLimited', 'error')
+      }
+
+      if (!response.ok) {
+        let code = ''
+        try {
+          code = ((await response.json()) as { error?: string }).error ?? ''
+        } catch {
+          // A non-JSON error body still means failure, just without a code.
+        }
+        resetWidget()
+        return say(workerMessage(code), 'error')
+      }
 
       element.reset()
+      resetWidget()
       say('success', 'ok')
     } catch {
+      resetWidget()
       say('failed', 'error')
     } finally {
-      if (submit) submit.disabled = !siteKey
+      element.removeAttribute('aria-busy')
+      // Never re-enable a form that was rendered disabled: without an endpoint
+      // or a site key no submit can succeed.
+      if (submit) submit.disabled = !isConfigured
     }
   })
 </script>
