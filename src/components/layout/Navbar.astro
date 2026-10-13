@@ -23,6 +23,21 @@ const { lang, localeSwitchHref } = Astro.props
 const t = useTranslation(lang)
 const currentPath = Astro.url.pathname
 
+// Astro.url.pathname keeps the trailing slash (/notes/) while localePath()
+// strips it (/notes). Without normalising, no link is ever active except /.
+const currentRoute = currentPath !== '/' ? currentPath.replace(/\/$/, '') : currentPath
+
+// Exact match, plus section match: a note page lives under /notes, so the
+// Notes entry stays lit there. A locale root ("/" or "/id") never
+// prefix-matches — every route on that locale starts with one, so without
+// this guard Home would light up on every Indonesian page.
+const isActiveRoute = (href: string): boolean => {
+  if (currentRoute === href) return true
+  const depth = href.split('/').filter(Boolean).length
+  const rootDepth = lang === 'en' ? 0 : 1
+  return depth > rootDepth && currentRoute.startsWith(`${href}/`)
+}
+
 const navIcons = {
   '/': 'nav-home',
   '/notes': 'nav-notes',
@@ -54,7 +69,7 @@ const localeOptions = getLocaleOptions({
       {
         NAV_LINKS.map((link) => {
           const href = localePath(lang, link.href)
-          const active = currentPath === href
+          const active = isActiveRoute(href)
           return (
             <a
               href={href}
@@ -113,7 +128,7 @@ const localeOptions = getLocaleOptions({
       {
         dockLinks.map((link) => {
           const href = localePath(lang, link.href)
-          const active = currentPath === href
+          const active = isActiveRoute(href)
           return (
             <a
               href={href}
