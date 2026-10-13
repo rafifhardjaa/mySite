@@ -61,8 +61,14 @@ const localeOptions = getLocaleOptions({
               href={href}
               aria-current={active ? 'page' : undefined}
               class:list={[
-                'text-sm transition-colors',
-                active ? 'font-medium text-text' : 'text-text-muted hover:text-text',
+                // Animated underline shared by hover, keyboard focus and the
+                // active page. It grows left to right from a rounded 2px bar.
+                // Active uses the line instead of font-medium, so navigating
+                // no longer shifts the row width by a weight change.
+                'relative pb-1 text-sm transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-accent after:transition-transform after:duration-[250ms] after:ease-[cubic-bezier(0.22,1,0.36,1)]',
+                active
+                  ? 'text-text after:scale-x-100'
+                  : 'text-text-muted after:scale-x-0 hover:text-text hover:after:scale-x-100 focus-visible:text-text focus-visible:after:scale-x-100 focus-visible:outline-none',
               ]}
             >
               {t(link.key)}
