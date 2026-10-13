@@ -1,6 +1,7 @@
 ---
 import Icon from '@/components/ui/Icon.astro'
 import { SITE } from '@/lib/constants'
+import { getNowItems } from '@/lib/now-items'
 import { getLang, useTranslation, localePath, type LangKey } from '@/i18n/utils'
 
 type FooterLink = {
@@ -20,6 +21,15 @@ const { lang } = Astro.props
 const t = useTranslation(lang)
 
 const handle = SITE.github.replace(/^https?:\/\/github\.com\//, '@')
+
+// Footer teaser for /now: the top "on repeat" track with its cover.
+// Prefers the first listening entry that has artwork; falls back to the
+// role line when there is no listening entry at all. Titles use the
+// "Track — Artist" convention; without the separator the whole title
+// renders as a single line.
+const listening = await getNowItems('listening')
+const nowSpinning = listening.find((item) => item.data.artwork) ?? listening[0]
+const [track, artist] = (nowSpinning?.data.title[lang] ?? '').split(' — ')
 
 const columns: { headingKey: string; links: FooterLink[] }[] = [
   {
@@ -64,11 +74,37 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
         </p>
       </div>
 
-      <a href={localePath(lang, '/now')} class="group flex flex-col text-left sm:text-right">
+      <a
+        href={localePath(lang, '/now')}
+        class="group flex flex-col text-left sm:items-end sm:text-right"
+      >
         <span class="text-xs text-text-muted">{t('footer.currently')}</span>
-        <span class="text-sm text-text transition-colors group-hover:text-accent">
-          {SITE.role[lang]}
-        </span>
+        {
+          nowSpinning ? (
+            <span class="mt-2 flex items-center gap-3">
+              {nowSpinning.data.artwork && (
+                <img
+                  src={nowSpinning.data.artwork}
+                  alt=""
+                  width="40"
+                  height="40"
+                  loading="lazy"
+                  class="h-10 w-10 rounded-md border border-border object-cover"
+                />
+              )}
+              <span class="flex flex-col">
+                <span class="text-sm text-text transition-colors group-hover:text-accent">
+                  {track}
+                </span>
+                {artist && <span class="text-xs text-text-muted">{artist}</span>}
+              </span>
+            </span>
+          ) : (
+            <span class="text-sm text-text transition-colors group-hover:text-accent">
+              {SITE.role[lang]}
+            </span>
+          )
+        }
       </a>
     </div>
 

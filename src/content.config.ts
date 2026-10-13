@@ -61,6 +61,10 @@ const nowItems = defineCollection({
     // External destination (book page, Substack, album on Last.fm…).
     // Internal note links use noteSlug so the locale prefix stays correct.
     href: z.string().url().optional(),
+    // Cover art for kind "listening" (Cover Art Archive front-250 URLs —
+    // verified by hand, never live-searched at build: song search misses
+    // real tracks like Beyoncé's "All Night"). Rendered in the footer.
+    artwork: z.string().url().optional(),
     // Slug of a note under /notes (urlPath form, e.g. "vibe-coding-answer-or-trap").
     noteSlug: z.string().optional(),
     status: z.enum(['active', 'paused', 'done']).default('active'),
