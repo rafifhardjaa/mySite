@@ -132,5 +132,8 @@
   "footer.rss": "Umpan RSS",
   "contact.client.tooLong": "Salah satu kolom terlalu panjang. Silakan dipersingkat lalu coba lagi.",
   "contact.client.turnstileMissing": "Tunggu pemeriksaan keamanan selesai, lalu coba lagi.",
-  "contact.client.turnstileFailed": "Pemeriksaan keamanan tidak lolos. Silakan coba lagi."
+  "contact.client.turnstileFailed": "Pemeriksaan keamanan tidak lolos. Silakan coba lagi.",
+  "contact.client.verifyFailed": "Pemeriksaan keamanan tidak dapat dikonfirmasi. Silakan coba lagi.",
+  "contact.client.deliveryFailed": "Pesan tidak dapat dikirim. Silakan coba lagi, atau kirim email langsung.",
+  "contact.client.serverError": "Ada masalah di sisi saya. Silakan kirim email langsung saja."
 }

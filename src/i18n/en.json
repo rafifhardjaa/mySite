@@ -132,5 +132,8 @@
   "footer.rss": "RSS Feed",
   "contact.client.tooLong": "One of those fields is too long. Please shorten it and try again.",
   "contact.client.turnstileMissing": "Please wait for the security check to finish, then try again.",
-  "contact.client.turnstileFailed": "The security check did not pass. Please try again."
+  "contact.client.turnstileFailed": "The security check did not pass. Please try again.",
+  "contact.client.verifyFailed": "The security check could not be confirmed. Please try again.",
+  "contact.client.deliveryFailed": "The message could not be delivered. Please try again, or email me directly.",
+  "contact.client.serverError": "Something is wrong on my end. Please email me directly instead."
 }

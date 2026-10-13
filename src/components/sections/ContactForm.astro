@@ -31,6 +31,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   data-msg-too-long={t('contact.client.tooLong')}
   data-msg-turnstile-missing={t('contact.client.turnstileMissing')}
   data-msg-turnstile-failed={t('contact.client.turnstileFailed')}
+  data-msg-verify-failed={t('contact.client.verifyFailed')}
+  data-msg-delivery-failed={t('contact.client.deliveryFailed')}
+  data-msg-server-error={t('contact.client.serverError')}
 >
   <form id="contact-form" class="space-y-4" novalidate>
     <div class="grid gap-4 sm:grid-cols-2">
@@ -132,6 +135,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     | 'tooLong'
     | 'turnstileMissing'
     | 'turnstileFailed'
+    | 'verifyFailed'
+    | 'deliveryFailed'
+    | 'serverError'
 
   const messageKey: Record<MessageKey, string> = {
     required: 'msgRequired',
@@ -143,6 +149,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     tooLong: 'msgTooLong',
     turnstileMissing: 'msgTurnstileMissing',
     turnstileFailed: 'msgTurnstileFailed',
+    verifyFailed: 'msgVerifyFailed',
+    deliveryFailed: 'msgDeliveryFailed',
+    serverError: 'msgServerError',
   }
 
   function say(key: MessageKey, tone: 'ok' | 'error'): void {
@@ -208,9 +217,10 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     loadTurnstile()
   }
 
-  // Worker error codes the visitor can act on get their own message. Anything
-  // else — including codes added by a future worker — falls back to the
-  // generic failure so the form never shows a blank status.
+  // Worker error codes get their own message wherever the visitor can tell
+  // the stages apart. Anything unlisted — including codes added by a future
+  // worker — falls back to the generic failure so the form never shows a
+  // blank status.
   function workerMessage(code: string): MessageKey {
     switch (code) {
       case 'field_too_long':
@@ -218,6 +228,13 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
       case 'missing_turnstile':
       case 'turnstile_failed':
         return 'turnstileFailed'
+      case 'verify_failed':
+        return 'verifyFailed'
+      case 'delivery_failed':
+        return 'deliveryFailed'
+      case 'misconfigured':
+      case 'rate_limit_unavailable':
+        return 'serverError'
       case 'rate_limited':
         return 'rateLimited'
       default:
