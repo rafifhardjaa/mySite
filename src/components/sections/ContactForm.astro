@@ -98,12 +98,12 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     <p id="contact-status" class="hidden text-sm" role="status" aria-live="polite"></p>
 
     <p class="text-xs leading-relaxed text-text-subtle">
-      {t('contact.protected')}
+      {t('contact.protected')}{' '}
       <a
         href={`mailto:${SITE.email}`}
         class="underline decoration-border underline-offset-2 transition-colors hover:text-accent"
       >
-        {t('contact.directFallback')}
+        {t('contact.directFallback')}{' '}
         {SITE.email}
       </a>
     </p>

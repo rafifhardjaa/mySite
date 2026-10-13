@@ -1,7 +1,7 @@
 # One Worker serves the whole site: static files from dist/ plus the contact
 # API at /api/contact (see worker/contact.ts). There is no separate Pages
 # project — `wrangler deploy` publishes both in one go.
-name = "mysite"
+name = "rafifhardjaa"
 main = "worker/contact.ts"
 compatibility_date = "2026-01-01"
 
