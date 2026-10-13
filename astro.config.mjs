@@ -11,6 +11,17 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   output: 'static',
+  // Speculative prefetch + prerender for every same-origin link, on hover.
+  // The browser renders the hovered page in the background, so the following
+  // navigation is near-instant even on a slow connection. External links,
+  // mailto: and same-page anchors are never eligible; the RSS feed is opted
+  // out per link because prerendering an XML document buys nothing.
+  // No ClientRouter is involved: this only hints the browser, it changes no
+  // navigation behaviour and runs no extra page JS until a real visit.
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'hover',
+  },
   markdown: {
     shikiConfig: {
       // Warm light code for the default theme, neutral dark code for dark mode.

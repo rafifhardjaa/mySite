@@ -9,6 +9,7 @@ type FooterLink = {
   labelKey?: string
   external?: boolean
   icon?: 'rss'
+  noPrefetch?: boolean
 }
 
 interface Props {
@@ -35,7 +36,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
     links: [
       { href: '/projects', labelKey: 'nav.projects' },
       { href: '/resume', labelKey: 'resume.heading' },
-      { href: '/notes/rss.xml', labelKey: 'footer.rss', icon: 'rss' },
+      { href: '/notes/rss.xml', labelKey: 'footer.rss', icon: 'rss', noPrefetch: true },
       { href: '/privacy', labelKey: 'privacy.navLabel' },
       { href: SITE.github, labelKey: 'footer.source', external: true },
     ],
@@ -87,6 +88,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
                     <a
                       href={href}
                       {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      {...(link.noPrefetch ? { 'data-astro-prefetch': 'false' } : {})}
                       class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
                     >
                       {link.labelKey ? t(link.labelKey) : link.label}
