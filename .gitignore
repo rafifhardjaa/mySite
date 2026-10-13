@@ -23,6 +23,7 @@ todo.md
 .DS_Store
 Thumbs.db
 .vscode/
+!.vscode/extensions.json
 .idea/
 
 # Planning docs — local only
