@@ -28,3 +28,6 @@ Thumbs.db
 
 # Planning docs — local only
 portfolio-docs/
+
+# Local editor/notes-app state
+.obsidian/
