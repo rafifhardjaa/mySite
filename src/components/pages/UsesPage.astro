@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets'
+import { Code } from 'astro:components'
 import DocsLayout from '@/layouts/DocsLayout.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
 import Icon from '@/components/ui/Icon.astro'
@@ -55,6 +56,14 @@ const headings = [
   { depth: 2, slug: 'setup', text: t('uses.setupTitle') },
   ...rows.map((row) => ({ depth: 2, slug: row.id, text: t(row.titleKey) })),
 ]
+
+// Rendered through Shiki like the note pages, so the colours match the rest
+// of the site instead of falling back to unstyled body text.
+const SETUP_SNIPPET = `# Daily apps
+brew install --cask visual-studio-code firefox bruno postman gitkraken dbeaver-community obsidian orbstack herd openvpn-connect orca
+
+# CLI tools I wrote about
+brew install mole gitleaks`
 ---
 
 <DocsLayout
@@ -75,18 +84,36 @@ const headings = [
       loading="eager"
       fetchpriority="high"
       decoding="async"
-      class="max-h-[26rem] w-full object-cover"
+      class="aspect-[16/10] max-h-[26rem] w-full object-cover opacity-0 transition-opacity duration-500"
+      data-fade-img
     />
   </div>
 
   <h2 id="setup" class="mt-12 mb-3 text-xl font-semibold scroll-mt-24">{t('uses.setupTitle')}</h2>
   <div data-code-enhance>
-    <pre><code class="language-bash"># Daily apps
-brew install --cask visual-studio-code firefox bruno postman gitkraken dbeaver-community obsidian orbstack herd openvpn-connect orca
-
-# CLI tools I wrote about
-brew install mole gitleaks</code></pre>
+    <Code code={SETUP_SNIPPET} lang="bash" />
   </div>
+
+  <script>
+    // The hero image sits above the fold with no dimensions of its own. Until
+    // it arrives the browser shows the alt text in the empty box, which reads
+    // as a glitch on a cold load. The reserved aspect ratio holds the layout
+    // still, and the image fades in only once decoded — or at once when it is
+    // already cached. Reduced-motion visitors get no transition: global.css
+    // forces transitions off for them, so the image simply appears.
+    ;(() => {
+      const img = document.querySelector<HTMLImageElement>('[data-fade-img]')
+      if (!img) return
+
+      const show = () => img.classList.remove('opacity-0')
+
+      if (img.complete && img.naturalWidth > 0) show()
+      else {
+        img.addEventListener('load', show, { once: true })
+        img.addEventListener('error', show, { once: true })
+      }
+    })()
+  </script>
   <div class="mt-4">
     <a href={localePath(lang, '/notes/mole-mac-cleanup')} class={INLINE_LINK_CLASS}>
       {t('uses.proofMole')}

@@ -167,6 +167,10 @@
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
+  /* Long one-liners (install commands, URLs) must scroll inside the frame
+     instead of being clipped by .note-code's overflow: hidden. */
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .note-code-body pre code {
