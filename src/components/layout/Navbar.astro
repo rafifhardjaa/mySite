@@ -45,11 +45,10 @@ const localeOptions = getLocaleOptions({
 
 <nav
   id="site-nav"
-  data-nav
-  class="nav-bar fixed inset-x-0 top-0 z-50 hidden px-0 pt-0 data-[floating]:px-6 data-[floating]:pt-4 md:block"
+  class="fixed inset-x-0 top-0 z-50 hidden px-6 pt-4 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:block"
 >
   <div
-    class="nav-bar-inner mx-auto flex layout-container items-center justify-between rounded-none border border-transparent bg-bg px-5 py-2 data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-sm data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+    class="mx-auto flex layout-container items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-5 py-2 shadow-sm shadow-black/5 backdrop-blur-xl"
   >
     <div class="flex items-center gap-5">
       {
@@ -105,10 +104,10 @@ const localeOptions = getLocaleOptions({
 
 <div
   data-nav-dock
-  class="nav-bar fixed inset-x-0 bottom-0 z-50 px-0 pb-0 data-[floating]:px-4 data-[floating]:pb-4 md:hidden"
+  class="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden"
 >
   <div
-    class="nav-bar-inner mx-auto flex max-w-md items-center justify-between rounded-none border border-transparent bg-bg px-3 py-2 data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-lg data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+    class="mx-auto flex max-w-md items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-3 py-2 shadow-lg shadow-black/5 backdrop-blur-xl"
   >
     <div class="flex items-center gap-0.5">
       {
@@ -200,38 +199,6 @@ const localeOptions = getLocaleOptions({
   </div>
 </div>
 
-<style>
-  /* Detaching and settling want different tempos. Responding to a scroll
-     should feel immediate, so becoming floating is quick; drifting back to the
-     attached state after the idle timer is unhurried. One CSS block covers both
-     because the attribute is what flips the duration. */
-  .nav-bar {
-    transition-property: transform, opacity, padding;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .nav-bar[data-floating] {
-    transition-duration: 280ms;
-  }
-
-  .nav-bar:not([data-floating]) {
-    transition-duration: 420ms;
-  }
-
-  .nav-bar-inner {
-    transition-property: border-radius, border-color, box-shadow, background-color;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .nav-bar-inner[data-floating] {
-    transition-duration: 280ms;
-  }
-
-  .nav-bar-inner:not([data-floating]) {
-    transition-duration: 420ms;
-  }
-</style>
-
 <script>
   const nav = document.getElementById('site-nav')
   const mobileDock = document.querySelector<HTMLElement>('[data-nav-dock]')
@@ -242,44 +209,9 @@ const localeOptions = getLocaleOptions({
   // threshold makes the nav feel responsive when reversing scroll direction.
   const HIDE_DELTA = 20
   const SHOW_DELTA = 8
-  // How long the bar stays detached after the last interaction before it settles
-  // back into the flat, edge-attached style.
-  const IDLE_MS = 3000
 
   let lastY = window.scrollY
   let ticking = false
-  let navHidden = false
-  let idleTimer: number | undefined
-
-  // Appearance and visibility are independent. data-floating controls the pill
-  // shape; the -translate-y-full / translate-y-full classes control hiding.
-  //
-  // The attribute has to go on BOTH the wrapper and its inner bar: the padding
-  // variants live on the wrapper while border-radius, shadow and blur live on
-  // the inner one, and a `data-[floating]:` class only matches when the element
-  // carrying it also carries the attribute.
-  function setFloating(floating: boolean) {
-    for (const element of [nav, mobileDock]) {
-      if (!element) continue
-      for (const target of [element, element.firstElementChild]) {
-        if (!(target instanceof HTMLElement)) continue
-        if (floating) target.setAttribute('data-floating', '')
-        else target.removeAttribute('data-floating')
-      }
-    }
-  }
-
-  function markEngaged() {
-    if (window.scrollY <= TOP_OFFSET) return settle()
-    setFloating(true)
-    window.clearTimeout(idleTimer)
-    idleTimer = window.setTimeout(settle, IDLE_MS)
-  }
-
-  function settle() {
-    window.clearTimeout(idleTimer)
-    setFloating(false)
-  }
 
   function applyVisibility() {
     const y = window.scrollY
@@ -287,23 +219,18 @@ const localeOptions = getLocaleOptions({
     if (y <= TOP_OFFSET) {
       nav?.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none')
       mobileDock?.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none')
-      navHidden = false
-      settle()
     } else if (y > lastY + HIDE_DELTA) {
       // The settings panel lives inside the bar being hidden. Leaving it open
       // would strand aria-expanded="true" and keyboard focus in a hidden menu.
       closeSettings()
       nav?.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none')
       mobileDock?.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none')
-      navHidden = true
     } else if (y < lastY - SHOW_DELTA) {
       nav?.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none')
       mobileDock?.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none')
-      navHidden = false
     }
 
     lastY = y
-    markEngaged()
     ticking = false
   }
 
@@ -316,14 +243,6 @@ const localeOptions = getLocaleOptions({
     },
     { passive: true }
   )
-
-  // Any deliberate interaction keeps the bar detached, not just scrolling. The
-  // timer restarts on each one so it settles 3s after the visitor stops.
-  for (const event of ['touchstart', 'pointerdown', 'keydown', 'wheel'] as const) {
-    window.addEventListener(event, markEngaged, { passive: true })
-  }
-
-  markEngaged()
 
   function closeSettings() {
     document.querySelectorAll('[data-settings-toggle]').forEach((button) => {

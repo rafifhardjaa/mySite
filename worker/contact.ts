@@ -20,7 +20,7 @@
  *
  * Setup (dashboard values — never commit real ones):
  *   wrangler.toml [vars]:
- *     ALLOWED_ORIGIN = "https://<your-site>"
+ *     ALLOWED_ORIGIN = "https://<your-site>,https://www.<your-site>"
  *     TO_EMAIL       = "<your-inbox>"
  *     FROM_EMAIL     = "Portfolio <<verified-sender>>"
  *   wrangler.toml [[kv_namespaces]]:
@@ -75,11 +75,33 @@ function cors(request: Request, env: Env): Record<string, string> {
   const origin = request.headers.get('origin') ?? ''
 
   return {
-    'access-control-allow-origin': origin === env.ALLOWED_ORIGIN ? origin : 'null',
+    'access-control-allow-origin': allowedOrigins(env).includes(origin) ? origin : 'null',
     'access-control-allow-methods': 'POST, OPTIONS',
     'access-control-allow-headers': 'content-type',
     'access-control-max-age': '86400',
   }
+}
+
+// ALLOWED_ORIGIN is a comma-separated list because the site answers on both
+// the apex and www hostnames, and an exact string match against one of them
+// would reject every submission from the other. Keep the list to exactly the
+// hostnames the site is served from — nothing else may post here.
+function allowedOrigins(env: Env): string[] {
+  return env.ALLOWED_ORIGIN.split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+}
+
+function allowedHostnames(env: Env): string[] {
+  const hosts: string[] = []
+  for (const entry of allowedOrigins(env)) {
+    try {
+      hosts.push(new URL(entry).hostname)
+    } catch {
+      console.error(`ALLOWED_ORIGIN entry is not a URL: ${entry}`)
+    }
+  }
+  return hosts
 }
 
 export default {
@@ -103,7 +125,7 @@ export default {
     }
 
     const origin = request.headers.get('origin') ?? ''
-    if (origin !== env.ALLOWED_ORIGIN) return json({ error: 'bad_origin' }, 403, base)
+    if (!allowedOrigins(env).includes(origin)) return json({ error: 'bad_origin' }, 403, base)
 
     let payload: Record<string, string>
     try {
@@ -204,12 +226,14 @@ export default {
     }
 
     // A token minted for any other site is replayable here unless the hostname
-    // is checked. The expected host comes from ALLOWED_ORIGIN, so there is one
+    // is checked. The expected hosts come from ALLOWED_ORIGIN, so there is one
     // value to keep correct, not two.
     if (verdict.hostname) {
-      const expected = new URL(env.ALLOWED_ORIGIN).hostname
-      if (verdict.hostname !== expected) {
-        console.error(`turnstile hostname mismatch: got ${verdict.hostname}, want ${expected}`)
+      const expected = allowedHostnames(env)
+      if (!expected.includes(verdict.hostname)) {
+        console.error(
+          `turnstile hostname mismatch: got ${verdict.hostname}, want ${expected.join(' or ')}`
+        )
         return json({ error: 'turnstile_failed' }, 403, base)
       }
     }

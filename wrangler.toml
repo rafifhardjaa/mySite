@@ -15,9 +15,10 @@ binding = "RATE_LIMITER"
 id = "aee4cb950b0a4cf680c9c3b3842d3e10"
 
 [vars]
-# The exact origin the site is served from. Requests from anywhere else are
-# rejected before any work is done. Must match the deployed hostname.
-ALLOWED_ORIGIN = "https://rafifhardja.xyz"
+# Every origin the site is served from, comma-separated. The site answers on
+# both the apex and www hostnames, so both must be listed — an exact match
+# against one of them rejects every submission from the other.
+ALLOWED_ORIGIN = "https://rafifhardja.xyz,https://www.rafifhardja.xyz"
 TO_EMAIL = "abdurrahmanarrafif651@email.com"
 FROM_EMAIL = "onboarding@resend.dev"
 

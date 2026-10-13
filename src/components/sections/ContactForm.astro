@@ -243,7 +243,6 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
 
     if (submit) {
       submit.disabled = true
-      submit.dataset.label = submit.textContent ?? ''
     }
     element.setAttribute('aria-busy', 'true')
 

@@ -54,7 +54,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
 
 <footer class="mt-20 border-t border-border py-12">
   <div class="mx-auto layout-container px-6">
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-baseline sm:justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
       <div>
         <p class="font-mono-jb text-sm text-text">{handle}</p>
         <p class="mt-1 font-mono-jb text-xs text-text-muted">
@@ -63,46 +63,44 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
           {SITE.name}
         </p>
       </div>
-    </div>
 
-    <a href={localePath(lang, '/now')} class="group flex flex-col text-right">
-      <span class="flex flex-col">
+      <a href={localePath(lang, '/now')} class="group flex flex-col text-left sm:text-right">
         <span class="text-xs text-text-muted">{t('footer.currently')}</span>
         <span class="text-sm text-text transition-colors group-hover:text-accent">
           {SITE.role[lang]}
         </span>
-      </span>
-    </a>
-  </div>
+      </a>
+    </div>
 
-  <div class="mt-10 grid gap-8 sm:grid-cols-3">
-    {
-      columns.map((column) => (
-        <div>
-          <h2 class="font-mono-jb text-xs font-medium uppercase tracking-wider text-text-muted">
-            {t(column.headingKey)}
-          </h2>
-          <ul class="mt-4 space-y-3">
-            {column.links.map((link) => {
-              const href = link.external ? link.href : localePath(lang, link.href)
-              return (
-                <li>
-                  <a
-                    href={href}
-                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                    {...(link.noPrefetch ? { 'data-astro-prefetch': 'false' } : {})}
-                    class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
-                  >
-                    {link.labelKey ? t(link.labelKey) : link.label}
-                    {link.icon === 'rss' && <Icon name="rss" class="h-3 w-3 text-text-muted" />}
-                    {link.external && <Icon name="arrow-up-right" class="h-3 w-3" />}
-                  </a>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))
-    }
+    <div class="mt-10 grid gap-8 sm:grid-cols-3">
+      {
+        columns.map((column) => (
+          <div>
+            <h2 class="font-mono-jb text-xs font-medium uppercase tracking-wider text-text-muted">
+              {t(column.headingKey)}
+            </h2>
+            <ul class="mt-4 space-y-3">
+              {column.links.map((link) => {
+                const href = link.external ? link.href : localePath(lang, link.href)
+                return (
+                  <li>
+                    <a
+                      href={href}
+                      {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      {...(link.noPrefetch ? { 'data-astro-prefetch': 'false' } : {})}
+                      class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
+                    >
+                      {link.labelKey ? t(link.labelKey) : link.label}
+                      {link.icon === 'rss' && <Icon name="rss" class="h-3 w-3 text-text-muted" />}
+                      {link.external && <Icon name="arrow-up-right" class="h-3 w-3" />}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
   </div>
 </footer>

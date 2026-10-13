@@ -35,14 +35,17 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
 ---
 
 <div
-  class:list={[
-    'pfp relative shrink-0 overflow-hidden rounded-full border border-border bg-bg-subtle',
-    dimension,
-  ]}
   data-pending
   data-tiles-src={tileSrc}
-  role="img"
+  data-pfp-toggle
+  role="button"
+  tabindex="0"
+  aria-pressed="false"
   aria-label={alt}
+  class:list={[
+    'pfp relative shrink-0 cursor-pointer overflow-hidden rounded-full border border-border bg-bg-subtle',
+    dimension,
+  ]}
 >
   <Image
     src={hoverSrc}
@@ -90,8 +93,18 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
   }
 
   .pfp:hover .pfp-tile,
-  .pfp:focus-within .pfp-tile {
+  .pfp:focus-visible .pfp-tile,
+  .pfp[data-show-hover] .pfp-tile {
     opacity: 0;
+  }
+
+  /* Touch screens have no real hover. Without this, mobile Safari keeps the
+     first tap's :hover stuck, so the second tap could never flip back — the
+     toggle below owns the behaviour there instead. */
+  @media (hover: none) {
+    .pfp:hover .pfp-tile {
+      opacity: 1;
+    }
   }
 
   /* Two independent guards, both needed.
@@ -105,11 +118,11 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
      actually loaded, because it is requested as a CSS background and therefore
      loses the race against an <img>.
 
-     The doubled :hover/:focus-within selectors only raise specificity so these
+     The doubled :hover/:focus-visible selectors only raise specificity so these
      win over the rules above without !important. */
   .pfp[data-pending] .pfp-tile,
   .pfp[data-pending]:hover .pfp-tile,
-  .pfp[data-pending]:focus-within .pfp-tile {
+  .pfp[data-pending]:focus-visible .pfp-tile {
     opacity: 1;
     transition: none;
   }
@@ -123,6 +136,21 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
   ;(() => {
     const pfp = document.querySelector<HTMLElement>('.pfp[data-pending]')
     if (!pfp) return
+
+    // Tap or keyboard flips the mosaic to the second photo and back. Hover
+    // keeps working for mouse users; the toggle is what touch users get.
+    const flip = () => {
+      const next = pfp.getAttribute('aria-pressed') !== 'true'
+      pfp.toggleAttribute('data-show-hover', next)
+      pfp.setAttribute('aria-pressed', String(next))
+    }
+
+    pfp.addEventListener('click', flip)
+    pfp.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      flip()
+    })
 
     let scrolled = false
     const releaseHover = () => pfp.removeAttribute('data-pending')
