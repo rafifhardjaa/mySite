@@ -2,13 +2,18 @@
 import PageLayout from '@/layouts/PageLayout.astro'
 import Icon from '@/components/ui/Icon.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
+import NowItemList from '@/components/ui/NowItemList.astro'
 import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
+import { getNowItems, getNowLastUpdated } from '@/lib/now-items'
 import { useTranslation, getLang, formatShortDate } from '@/i18n/utils'
 
 const lang = getLang(Astro.currentLocale)
 const t = useTranslation(lang)
 
-const lastUpdated = formatShortDate(new Date(2026, 9, 12), lang)
+const learning = await getNowItems('learning')
+const reading = await getNowItems('reading')
+const listening = await getNowItems('listening')
+const lastUpdated = formatShortDate(await getNowLastUpdated(), lang)
 
 const openTo = [
   'now.itemWork',
@@ -27,7 +32,7 @@ const projects = [
 
 <PageLayout title={t('now.heading')} description={SITE.description[lang]}>
   <div class="mx-auto layout-container px-6 pt-8 pb-16">
-    <SectionLabel label={t('now.heading')} class="mb-6" />
+    <SectionLabel label={t('now.heading')} as="h1" class="mb-6" />
     <p class="max-w-[70ch] text-lg leading-relaxed text-text-muted">
       {t('now.introA')}{' '}
       <a href="https://sive.rs" target="_blank" rel="noopener noreferrer" class={INLINE_LINK_CLASS}>
@@ -82,6 +87,30 @@ const projects = [
               ))
             }
           </div>
+        </div>
+      </section>
+
+      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
+        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowLearning')}</p>
+        <div>
+          <h2 class="font-serif text-2xl font-medium">{t('now.learningTitle')}</h2>
+          <NowItemList items={learning} lang={lang} />
+        </div>
+      </section>
+
+      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
+        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowReading')}</p>
+        <div>
+          <h2 class="font-serif text-2xl font-medium">{t('now.readingTitle')}</h2>
+          <NowItemList items={reading} lang={lang} />
+        </div>
+      </section>
+
+      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
+        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowListening')}</p>
+        <div>
+          <h2 class="font-serif text-2xl font-medium">{t('now.listeningTitle')}</h2>
+          <NowItemList items={listening} lang={lang} />
         </div>
       </section>
 

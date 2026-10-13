@@ -40,4 +40,37 @@ const projects = defineCollection({
   }),
 })
 
-export const collections = { notes, projects }
+const nowItems = defineCollection({
+  // NOTE: the pattern must stay '**/*.json' — a bare '*.json' silently matches
+  // nothing and every getCollection('now-items') comes back empty.
+  loader: glob({ pattern: '**/*.json', base: './src/content/now-items' }),
+  schema: z.object({
+    // Which /now section renders this entry. One file per entry, both
+    // languages nested — same bilingual strategy as the projects collection.
+    kind: z.enum(['reading', 'learning', 'listening']),
+    title: z.object({
+      en: z.string(),
+      id: z.string(),
+    }),
+    // One line on the /now page. The full write-up lives in /notes;
+    // point there with noteSlug instead of duplicating it here.
+    note: z.object({
+      en: z.string(),
+      id: z.string(),
+    }),
+    // External destination (book page, Substack, album on Last.fm…).
+    // Internal note links use noteSlug so the locale prefix stays correct.
+    href: z.string().url().optional(),
+    // Slug of a note under /notes (urlPath form, e.g. "vibe-coding-answer-or-trap").
+    noteSlug: z.string().optional(),
+    status: z.enum(['active', 'paused', 'done']).default('active'),
+    // Month the entry started, YYYY-MM. Rendered as "since …" on the page.
+    since: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+    // Bump whenever the entry changes. The page-level "last updated" stamp
+    // is derived from the newest updatedAt across all entries.
+    updatedAt: z.coerce.date(),
+    order: z.number().int().default(999),
+  }),
+})
+
+export const collections = { notes, projects, nowItems }

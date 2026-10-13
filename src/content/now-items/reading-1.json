@@ -1,0 +1,12 @@
+{
+  "kind": "reading",
+  "title": { "en": "PLACEHOLDER — book or essay title", "id": "PLACEHOLDER — judul buku atau esai" },
+  "note": {
+    "en": "PLACEHOLDER — one line on what it is about. The full summary lives in /notes; link it with noteSlug.",
+    "id": "PLACEHOLDER — satu baris tentang isinya. Ringkasan penuh tinggal di /notes; tautkan lewat noteSlug."
+  },
+  "status": "active",
+  "since": "2026-10",
+  "updatedAt": "2026-10-14",
+  "order": 1
+}

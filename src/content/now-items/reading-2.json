@@ -1,0 +1,15 @@
+{
+  "kind": "reading",
+  "title": {
+    "en": "PLACEHOLDER — Substack or article title",
+    "id": "PLACEHOLDER — judul Substack atau artikel"
+  },
+  "note": {
+    "en": "PLACEHOLDER — one line on why it is worth reading.",
+    "id": "PLACEHOLDER — satu baris kenapa layak dibaca."
+  },
+  "status": "active",
+  "since": "2026-10",
+  "updatedAt": "2026-10-14",
+  "order": 2
+}

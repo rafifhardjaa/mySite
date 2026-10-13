@@ -1,0 +1,57 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { INLINE_LINK_CLASS } from '@/lib/constants'
+import { localePath, useTranslation, type LangKey } from '@/i18n/utils'
+import type { NowItemEntry } from '@/lib/now-items'
+
+interface Props {
+  items: NowItemEntry[]
+  lang: LangKey
+}
+
+const { items, lang } = Astro.props
+const t = useTranslation(lang)
+---
+
+<ul class="mt-4 space-y-5">
+  {
+    items.map((item) => (
+      <li>
+        {item.data.noteSlug ? (
+          <a
+            href={localePath(lang, `/notes/${item.data.noteSlug}`)}
+            class={INLINE_LINK_CLASS}
+          >
+            {item.data.title[lang]}
+            <Icon name="arrow-up-right" class="h-3 w-3" />
+          </a>
+        ) : item.data.href ? (
+          <a
+            href={item.data.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={INLINE_LINK_CLASS}
+          >
+            {item.data.title[lang]}
+            <Icon name="arrow-up-right" class="h-3 w-3" />
+          </a>
+        ) : (
+          <span class="font-medium text-text">{item.data.title[lang]}</span>
+        )}
+        {(item.data.since || item.data.status !== 'active') && (
+          <span class="ml-2 font-mono text-sm text-text-muted">
+            {item.data.since && (
+              <>
+                · {t('now.since')} {item.data.since}
+              </>
+            )}
+            {item.data.status !== 'active' && (
+              <> · {t(item.data.status === 'paused' ? 'now.statusPaused' : 'now.statusDone')}</>
+            )}
+          </span>
+        )}
+        <p class="mt-1 max-w-[70ch] leading-relaxed text-text-muted">{item.data.note[lang]}</p>
+      </li>
+    ))
+  }
+</ul>

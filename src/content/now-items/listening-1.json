@@ -1,0 +1,12 @@
+{
+  "kind": "listening",
+  "title": { "en": "PLACEHOLDER — track title, Artist", "id": "PLACEHOLDER — judul lagu, Artis" },
+  "note": {
+    "en": "PLACEHOLDER — on repeat this week. Link the album with href when you fill this in.",
+    "id": "PLACEHOLDER — diputar berulang minggu ini. Tautkan albumnya lewat href saat mengisi ini."
+  },
+  "status": "active",
+  "since": "2026-10",
+  "updatedAt": "2026-10-14",
+  "order": 1
+}

@@ -1,0 +1,13 @@
+{
+  "kind": "learning",
+  "title": { "en": "Ruby on Rails", "id": "Ruby on Rails" },
+  "note": {
+    "en": "Convention over configuration, the Rails way — models, routing, and Hotwire.",
+    "id": "Convention over configuration ala Rails — model, routing, dan Hotwire."
+  },
+  "href": "https://rubyonrails.org/",
+  "status": "active",
+  "since": "2026-09",
+  "updatedAt": "2026-10-14",
+  "order": 1
+}
