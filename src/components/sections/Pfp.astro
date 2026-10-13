@@ -93,18 +93,22 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
   }
 
   .pfp:hover .pfp-tile,
-  .pfp:focus-visible .pfp-tile,
-  .pfp[data-show-hover] .pfp-tile {
+  .pfp:focus-visible .pfp-tile {
     opacity: 0;
   }
 
-  /* Touch screens have no real hover. Without this, mobile Safari keeps the
-     first tap's :hover stuck, so the second tap could never flip back — the
-     toggle below owns the behaviour there instead. */
-  @media (hover: none) {
-    .pfp:hover .pfp-tile {
-      opacity: 1;
-    }
+  /* Touch screens have no real hover, and a tap leaves :hover stuck. Once a
+     real touch has happened, stuck hover may only close, never open — the
+     explicit toggle below owns revealing. Driven by an actual touch event
+     rather than the hover media query, so it holds on any browser. */
+  .pfp[data-touch]:hover:not([data-show-hover]) .pfp-tile {
+    opacity: 1;
+  }
+
+  /* The explicit toggle wins over hover in every configuration. Only the
+     pending guards below outrank it. */
+  .pfp[data-show-hover] .pfp-tile {
+    opacity: 0;
   }
 
   /* Two independent guards, both needed.
@@ -150,6 +154,14 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
       if (event.key !== 'Enter' && event.key !== ' ') return
       event.preventDefault()
       flip()
+    })
+
+    // The first real touch marks this as a touch-driven avatar. A tap leaves
+    // :hover stuck behind, which would otherwise hold the photo open (or shut)
+    // regardless of the toggle above.
+    window.addEventListener('touchstart', () => pfp.setAttribute('data-touch', ''), {
+      once: true,
+      passive: true,
     })
 
     let scrolled = false
