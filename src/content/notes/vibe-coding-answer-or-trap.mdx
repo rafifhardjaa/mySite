@@ -1,0 +1,36 @@
+---
+title: "Is Vibe Coding an Answer or a Trap?"
+description: "Vibe coding means accepting AI code without ever reading it. That distinction decides everything: when it is a superpower, and when it is a trap."
+publishedAt: 2026-10-14
+tags: ["ai", "programming", "opinion"]
+draft: false
+lang: en
+---
+
+It is a trap the moment someone else has to depend on the result — and an answer everywhere before that line. The whole debate clears up once you use the word the way its inventor meant it.
+
+I read a good rundown of the term last week, and it sent me back to the source: Andrej Karpathy's post from February 2025, where he described fully surrendering to the vibe and forgetting the code even exists.
+
+## What the term actually means
+
+Vibe coding is building software by prompting a model, trying the result, and prompting again — **without ever reading the generated code**. That last clause is the entire definition. Someone with zero programming knowledge can do it, because the skill being exercised is describing outcomes, not understanding implementation.
+
+Simon Willison drew the line that matters: if the model writes code for you, and then you review it, test it properly, and can explain how it works to someone else — that is not vibe coding. That is ordinary software development with AI assistance. Vibe coding specifically means skipping the reading.
+
+## Why the trap is real
+
+Code nobody read has three predictable diseases: it rots fast when requirements change, it hides bugs no test was written to catch, and it can carry security holes nobody inspected. None of this shows up in the demo. All of it shows up the first time a stranger depends on it.
+
+So the safe zone is exactly where nothing depends on it lasting: quick prototypes to validate an idea, weekend experiments, learning sketches, one-off demos. Production systems, sensitive data, and anything a team owns sit on the other side.
+
+## Where I land
+
+I ship client work, so I live on the engineering side of Willison's line. My Kiro CLI sessions look like AI assistance from the outside — but every change gets read, run, and understood before it stays. That is the whole difference, and it is non-negotiable when someone pays for the result.
+
+Karpathy himself later named the grown-up form: agentic engineering, where the AI works with structured goals and a clear workflow instead of improvised prompting. Same speed, kept honesty. For prototypes, enjoy the vibe freely. For everything else, read the code — that has always been the job.
+
+## References
+
+- [Vibe Coding Adalah — Kiakrikil, the article I read](https://kiakrikil.com/vibe-coding-adalah/)
+- [VibeCoding — Martin Fowler's bliki](https://martinfowler.com/bliki/VibeCoding.html)
+- [Kiro CLI brainstorming — how I actually work with AI on real code](/notes/kiro-cli-brainstorming)
