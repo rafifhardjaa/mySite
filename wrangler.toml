@@ -19,8 +19,8 @@ id = "aee4cb950b0a4cf680c9c3b3842d3e10"
 # rejected before any work is done. Must match the deployed hostname.
 ALLOWED_ORIGIN = "https://rafifhardja.xyz"
 
-TO_EMAIL = "you@email.com"
-FROM_EMAIL = "Portfolio <hello@yourdomain.com>"
+TO_EMAIL = "abdurrahmanarrafif651@email.com"
+FROM_EMAIL = "onboarding@resend.dev"
 
 # Secrets — never in this file. Dashboard → Worker → Settings → Variables,
 # or CLI from a logged-in shell:
