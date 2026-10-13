@@ -1,9 +1,9 @@
 {
   "kind": "listening",
-  "title": { "en": "PLACEHOLDER — track title, Artist", "id": "PLACEHOLDER — judul lagu, Artis" },
+  "title": { "en": "All Night — Beyoncé", "id": "All Night — Beyoncé" },
   "note": {
-    "en": "PLACEHOLDER — on repeat this week. Link the album with href when you fill this in.",
-    "id": "PLACEHOLDER — diputar berulang minggu ini. Tautkan albumnya lewat href saat mengisi ini."
+    "en": "The Lemonade closer, on repeat this week.",
+    "id": "Lagu penutup Lemonade, diputar berulang minggu ini."
   },
   "status": "active",
   "since": "2026-10",

@@ -65,7 +65,10 @@ const nowItems = defineCollection({
     noteSlug: z.string().optional(),
     status: z.enum(['active', 'paused', 'done']).default('active'),
     // Month the entry started, YYYY-MM. Rendered as "since …" on the page.
-    since: z.string().regex(/^\d{4}-\d{2}$/).optional(),
+    since: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/)
+      .optional(),
     // Bump whenever the entry changes. The page-level "last updated" stamp
     // is derived from the newest updatedAt across all entries.
     updatedAt: z.coerce.date(),

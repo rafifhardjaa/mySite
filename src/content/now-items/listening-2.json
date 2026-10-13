@@ -1,9 +1,9 @@
 {
   "kind": "listening",
-  "title": { "en": "PLACEHOLDER — track title, Artist", "id": "PLACEHOLDER — judul lagu, Artis" },
+  "title": { "en": "Always Somewhere — Scorpions", "id": "Always Somewhere — Scorpions" },
   "note": {
-    "en": "PLACEHOLDER — on repeat this week.",
-    "id": "PLACEHOLDER — diputar berulang minggu ini."
+    "en": "Crazy World ballad for late-night sessions.",
+    "id": "Balada Crazy World untuk sesi larut malam."
   },
   "status": "active",
   "since": "2026-10",

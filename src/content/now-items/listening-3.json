@@ -1,9 +1,9 @@
 {
   "kind": "listening",
-  "title": { "en": "PLACEHOLDER — track title, Artist", "id": "PLACEHOLDER — judul lagu, Artis" },
+  "title": { "en": "Transform — Daniel Caesar", "id": "Transform — Daniel Caesar" },
   "note": {
-    "en": "PLACEHOLDER — on repeat this week.",
-    "id": "PLACEHOLDER — diputar berulang minggu ini."
+    "en": "Slow-burning duet, on repeat this week.",
+    "id": "Duet yang mengalir pelan, diputar berulang minggu ini."
   },
   "status": "active",
   "since": "2026-10",

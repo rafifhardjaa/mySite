@@ -18,10 +18,7 @@ const t = useTranslation(lang)
     items.map((item) => (
       <li>
         {item.data.noteSlug ? (
-          <a
-            href={localePath(lang, `/notes/${item.data.noteSlug}`)}
-            class={INLINE_LINK_CLASS}
-          >
+          <a href={localePath(lang, `/notes/${item.data.noteSlug}`)} class={INLINE_LINK_CLASS}>
             {item.data.title[lang]}
             <Icon name="arrow-up-right" class="h-3 w-3" />
           </a>

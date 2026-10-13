@@ -1,12 +1,9 @@
 {
   "kind": "reading",
-  "title": {
-    "en": "PLACEHOLDER — Substack or article title",
-    "id": "PLACEHOLDER — judul Substack atau artikel"
-  },
+  "title": { "en": "Pulang Pergi — Tere Liye", "id": "Pulang Pergi — Tere Liye" },
   "note": {
-    "en": "PLACEHOLDER — one line on why it is worth reading.",
-    "id": "PLACEHOLDER — satu baris kenapa layak dibaca."
+    "en": "The Pulang saga continues — family, loyalty, and the shadow economy.",
+    "id": "Saga Pulang berlanjut — keluarga, kesetiaan, dan ekonomi bayangan."
   },
   "status": "active",
   "since": "2026-10",
