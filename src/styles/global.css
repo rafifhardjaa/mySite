@@ -1,0 +1,210 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource/geist-mono';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-400-italic.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource-variable/source-serif-4';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --color-bg: #faf9f5;
+  --color-bg-subtle: #f2f1ec;
+  --color-border: #e6e4dc;
+  --color-text: #2a2523;
+  --color-text-muted: #6f6862;
+  --color-text-subtle: #756e66;
+  --color-accent: #c25e38;
+  --color-accent-hover: #a84e2c;
+  --font-sans: 'Geist Variable', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-mono-jb: 'JetBrains Mono', ui-monospace, monospace;
+  --font-serif: 'Source Serif 4 Variable', Georgia, serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    color-scheme: light;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  .prose :is(h1, h2, h3, h4) {
+    font-family: var(--font-serif);
+  }
+
+  :root[data-lang='en'] .lang-id {
+    display: none;
+  }
+
+  :root[data-lang='id'] .lang-en {
+    display: none;
+  }
+}
+
+.dark {
+  --color-bg: #141413;
+  --color-bg-subtle: #1c1c1a;
+  --color-border: #292825;
+  --color-text: #e8e2d8;
+  --color-text-muted: #9a9188;
+  --color-text-subtle: #8c857c;
+  --color-accent: #d97757;
+  --color-accent-hover: #e08c6f;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --layout-max: 65ch;
+}
+
+:root[data-layout='wide'] {
+  --layout-max: 80ch;
+}
+
+:root[data-layout='wider'] {
+  --layout-max: 100ch;
+}
+
+@utility layout-container {
+  max-width: var(--layout-max);
+}
+
+/* Docs-style code blocks on note pages. The code colours come from Astro/Shiki;
+   this frame only adds a terminal badge and copy control in the site theme. */
+.note-code {
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-bg);
+}
+
+.note-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono-jb), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.note-code-label {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+  letter-spacing: 0.02em;
+}
+
+.note-code-label svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.note-code-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.58rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.note-code-copy:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+.note-code-copy:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.note-code-copy svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.note-code-body {
+  background: var(--color-bg-subtle);
+}
+
+.note-code-body pre {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.note-code-body pre code {
+  font-family: var(--font-mono-jb), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Shiki emits light colours inline and dark colours as variables. */
+.dark .note-code-body .astro-code,
+.dark .note-code-body .astro-code span {
+  color: var(--shiki-dark) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+:root[data-animation='off'] *,
+:root[data-animation='off'] *::before,
+:root[data-animation='off'] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+:root[data-animation='on'] *,
+:root[data-animation='on'] *::before,
+:root[data-animation='on'] *::after {
+  transition-duration: 0.2s !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Disable smooth scrolling for reduced‑motion visitors. */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html * {
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-animation='off'] {
+  scroll-behavior: auto !important;
+}

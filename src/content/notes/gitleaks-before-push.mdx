@@ -1,0 +1,156 @@
+---
+title: "Gitleaks: Find the Gap Before It Reaches main"
+description: "A short Gitleaks setup: install it, scan history and staged changes, block leaks with a pre-commit hook, and gate pushes in CI."
+publishedAt: 2026-10-12
+tags: ["security", "git", "tooling"]
+draft: false
+lang: en
+---
+
+import { Image } from 'astro:assets'
+import gitleaksScan from '@/assets/gitleaks.png'
+
+## Introduction
+
+A pushed secret is already public enough to matter. This note uses
+[Gitleaks](https://github.com/gitleaks/gitleaks), a Go secret scanner, as a
+short safety net: find hardcoded credentials in history, check staged changes
+locally, then block bad pushes in CI.
+
+The setup below assumes the current release is `v8.30.1`. Gitleaks is now
+feature-complete, so treat it as stable tooling, not as a platform to build on.
+
+## Installation
+
+### Homebrew
+
+```bash
+brew install gitleaks
+```
+
+### Docker
+
+Run scans without installing anything:
+
+```bash
+docker pull ghcr.io/gitleaks/gitleaks:latest
+```
+
+```bash
+docker run -v "$(pwd)":/path ghcr.io/gitleaks/gitleaks:latest git /path
+```
+
+The volume mount matters: the container cannot scan history it cannot see.
+
+### Go
+
+The repo moved, but the Go module path did not:
+
+```bash
+go install github.com/zricethezav/gitleaks/v8@v8.30.1
+```
+
+## Usage
+
+### Scan committed history
+
+```bash
+gitleaks git
+```
+
+```bash
+gitleaks git -v path/to/repo
+```
+
+```bash
+gitleaks git --redact
+```
+
+`gitleaks git` reads committed history only. It does not see uncommitted edits.
+
+### Scan staged and unstaged changes
+
+These flags are different:
+
+```bash
+gitleaks git --pre-commit --staged
+```
+
+`--pre-commit` sees unstaged changes. `--staged` sees staged changes. Use both
+before committing.
+
+### Scan a directory or stdin
+
+```bash
+gitleaks dir -v ./some/path
+```
+
+```bash
+cat config.yaml | gitleaks stdin
+```
+
+### Make reports fail CI
+
+```bash
+gitleaks git --report-format sarif --report-path results.sarif --redact
+```
+
+Exit `1` means leaks were found, so the CI step fails without extra scripting.
+
+## Block bad pushes
+
+### Local pre-commit hook
+
+Use the [pre-commit](https://pre-commit.com/) framework and add this file:
+
+```yaml
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+```
+
+Then install it:
+
+```bash
+pre-commit install
+```
+
+### Minimal CI gate
+
+The critical line is `fetch-depth: 0`; shallow clones leave almost no history
+to scan:
+
+```yaml
+- uses: actions/checkout@v6
+  with:
+    fetch-depth: 0
+- name: Scan for secrets
+  run: |
+    docker run -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
+      git /repo --report-format sarif --report-path /repo/results.sarif --redact
+```
+
+## Proof
+
+A real run on one of my own repos — 80 commits scanned in 427 ms, no leaks
+found:
+
+<Image
+  src={gitleaksScan}
+  alt="Terminal output of gitleaks detect: 80 commits scanned in 427 ms, no leaks found"
+  widths={[800, 1200]}
+  sizes="(max-width: 640px) 100vw, 800px"
+  loading="lazy"
+  decoding="async"
+  class="rounded-2xl border border-border"
+/>
+
+## References
+
+- [Gitleaks repository](https://github.com/gitleaks/gitleaks)
+- [Gitleaks README: usage and commands](https://github.com/gitleaks/gitleaks#usage)
+- [pre-commit framework](https://pre-commit.com/)
+- [GitHub checkout `fetch-depth` option](https://github.com/actions/checkout)
+- [SARIF upload action](https://github.com/github/codeql-action)

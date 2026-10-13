@@ -1,0 +1,61 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import { useTranslation, type LangKey } from '@/i18n/utils'
+import gallery1 from '@/assets/gallery-1.jpg'
+import gallery2 from '@/assets/gallery-2.jpg'
+import gallery3 from '@/assets/gallery-3.jpg'
+import gallery4 from '@/assets/gallery-4.jpg'
+import gallery5 from '@/assets/gallery-5.jpg'
+
+interface Props {
+  lang: LangKey
+}
+
+const { lang } = Astro.props
+const t = useTranslation(lang)
+
+interface Photo {
+  file: ImageMetadata
+  altKey: string
+  wide?: boolean
+}
+
+const photos: Photo[] = [
+  { file: gallery1, altKey: 'home.gallery.photo1', wide: true },
+  { file: gallery2, altKey: 'home.gallery.photo2' },
+  { file: gallery3, altKey: 'home.gallery.photo3' },
+  { file: gallery4, altKey: 'home.gallery.photo4' },
+  { file: gallery5, altKey: 'home.gallery.photo5' },
+]
+---
+
+<section aria-label={t('home.gallery.heading')}>
+  <SectionLabel label={t('home.gallery.heading')} class="mb-3" />
+  <p class="mb-8 max-w-[70ch] text-text-muted">{t('home.gallery.body')}</p>
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+    {
+      photos.map((photo) => (
+        <figure class:list={[photo.wide && 'col-span-2']}>
+          <div
+            class:list={[
+              'overflow-hidden rounded-2xl border border-border bg-bg-subtle',
+              photo.wide ? 'aspect-[3/2]' : 'aspect-[3/4]',
+            ]}
+          >
+            <Image
+              src={photo.file}
+              alt={t(photo.altKey)}
+              widths={[400, 800, 1200]}
+              sizes="(max-width: 640px) 50vw, 400px"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            />
+          </div>
+        </figure>
+      ))
+    }
+  </div>
+</section>

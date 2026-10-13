@@ -1,0 +1,91 @@
+---
+title: "kiro-cli: A Real Partner for Brainstorming Before I Build"
+description: "kiro-cli is an AI coding agent in the terminal. Installing it, logging in, and the brainstorm-first flow I use before making anything."
+publishedAt: 2026-10-12
+tags: ["ai", "cli", "tooling"]
+draft: false
+lang: en
+---
+
+## Introduction
+
+Before I make anything, I argue with it first.
+[kiro-cli](https://github.com/kirodotdev/Kiro) is an AI coding agent that lives
+in the terminal, made by the Kiro team at AWS. It reads code, runs commands,
+and asks before destructive actions — but the way I use it most is earlier
+than that: as a brainstorming partner that helps me think an idea through
+before a single file exists.
+
+The public repo is an issue tracker; the product source is not hosted there.
+Docs live at [kiro.dev/docs/cli](https://kiro.dev/docs/cli/).
+
+## Installation
+
+macOS or Linux, one command:
+
+```bash
+curl -fsSL https://cli.kiro.dev/install | bash
+```
+
+Then sign in — no AWS account required:
+
+```bash
+kiro-cli login
+```
+
+GitHub, Google, or an AWS Builder ID all work. There is a free tier (Kiro
+Free, 50 credits), which is enough to try the whole flow below.
+
+Keep it current:
+
+```bash
+kiro-cli update
+```
+
+## Usage
+
+### Start with the idea, not the code
+
+```bash
+cd my-project
+kiro-cli chat
+```
+
+Describe the thing you want to make in plain words: what it does, who it is
+for, what you are unsure about. Ask it to challenge the idea, not just agree
+with it.
+
+### Plan before building
+
+```bash
+/plan
+```
+
+`/plan` makes the agent outline steps before acting. For a brand-new thing, I
+ask for two or three approaches with trade-offs, pick one, and only then let
+it touch files.
+
+### Give it context with @
+
+Inside a session, `@` pulls files straight into the conversation:
+
+```text
+Review @src/api/routes.ts and tell me what would break if I add offline mode
+```
+
+No tool call, no permissions dance — the file contents land inline.
+
+### One question, no session
+
+```bash
+kiro-cli chat --no-interactive "which config file decides the port in this repo?"
+```
+
+Handy from scripts, or when you want an answer without opening the full UI.
+
+## References
+
+- [Kiro CLI site](https://kiro.dev/cli/)
+- [Kiro CLI docs](https://kiro.dev/docs/cli/)
+- [Public issue tracker](https://github.com/kirodotdev/Kiro)
+- [CLI command reference](https://kiro.dev/docs/reference/cli-commands/)

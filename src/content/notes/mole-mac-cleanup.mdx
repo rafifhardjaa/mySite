@@ -1,0 +1,136 @@
+---
+title: "Mole: Help My Mac Breathe Again"
+description: "A short Mole setup for macOS: install it, preview cleanup safely, purge project artifacts, and check system health."
+publishedAt: 2026-10-12
+tags: ["macos", "tooling", "cli"]
+draft: false
+lang: en
+---
+
+import { Image } from 'astro:assets'
+import moleClean from '@/assets/mole-clean.png'
+
+## Introduction
+
+When macOS feels slow for no clear reason, the cause is often ordinary buildup:
+caches, logs, leftover app data, and rebuildable project artifacts. This note
+uses [Mole](https://github.com/tw93/Mole), an open-source macOS CLI, to find
+that weight and remove it without handing the disk to a closed cleaner app.
+
+Mole is macOS-only, supports macOS 12 and newer, and must never be run with
+`sudo`. The current release is `V1.59.1`.
+
+## Installation
+
+### Homebrew
+
+```bash
+brew install mole
+```
+
+This installs the CLI only.
+
+### Install script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash
+```
+
+Pin a version instead of following `main`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash -s -- 1.59.1
+```
+
+To avoid `sudo` during future updates, install into your home directory:
+
+```bash
+mkdir -p "$HOME/.local/bin"
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash -s -- --prefix "$HOME/.local/bin"
+```
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Usage
+
+### Open the menu
+
+```bash
+mo
+```
+
+`mo` alone opens Clean, Uninstall, Optimize, Analyze, and Status. Arrow keys
+and Vim keys both work.
+
+### Preview cleanup first
+
+Mole is not dry-run by default. Always preview destructive work:
+
+```bash
+mo clean --dry-run
+```
+
+```bash
+sudo -v && mo clean --dry-run
+```
+
+The second form gives a fuller preview because unprivileged previews skip
+paths that need administrator access.
+
+### Purge project artifacts
+
+`purge` is separate from `clean` and targets rebuildable files such as
+`node_modules`, `dist`, `target`, `venv`, `.next`, `DerivedData`, and `Pods`:
+
+```bash
+mo purge --dry-run
+```
+
+```bash
+mo purge --yes
+```
+
+Recent activity is skipped by default, nested repositories are protected, and
+worktrees themselves are never removed.
+
+### Find space, then check health
+
+```bash
+mo analyze
+```
+
+```bash
+mo status
+```
+
+```bash
+mo history --limit 20
+```
+
+Use `analyze` to see what is using space, `status` for a read-only health
+check, and `history` to review what was deleted.
+
+## Proof
+
+Not a stock screenshot — my own Mac after one run:
+
+<Image
+  src={moleClean}
+  alt="Terminal output of mo clean: 1.44 GB tracked cleanup across 129 items, freeing 4.95 GB"
+  widths={[800, 1200]}
+  sizes="(max-width: 640px) 100vw, 800px"
+  loading="lazy"
+  decoding="async"
+  class="rounded-2xl border border-border"
+/>
+
+## References
+
+- [Mole repository](https://github.com/tw93/Mole)
+- [Mole releases](https://github.com/tw93/Mole/releases)
+- [Homebrew](https://brew.sh/)

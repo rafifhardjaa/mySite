@@ -1,0 +1,158 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+  src: ImageMetadata
+  hoverSrc: ImageMetadata
+  alt: string
+  cols?: number
+  size?: 'sm' | 'md'
+}
+
+const { src, hoverSrc, alt, cols = 6, size = 'md' } = Astro.props
+
+const dimension = size === 'sm' ? 'h-20 w-20' : 'h-28 w-28 sm:h-32 sm:w-32'
+
+// The base photo is drawn as a CSS background on the tiles, while the hover
+// photo is a real <img>. Browsers give background images much lower priority
+// than <img>, so the hover photo used to arrive first and showed through the
+// still-empty tiles for a frame or two. The script waits for this URL before
+// revealing the hover layer.
+const tileSrc = src.src
+
+function pseudoRandom(index: number, salt: number): number {
+  return ((index * 9301 + salt * 49297) % 233280) / 233280
+}
+
+const position = (n: number): number => (cols > 1 ? (n / (cols - 1)) * 100 : 50)
+
+const tiles = Array.from({ length: cols * cols }, (_, index) => ({
+  x: position(index % cols),
+  y: position(Math.floor(index / cols)),
+  delay: Math.round(pseudoRandom(index, 7) * 280),
+}))
+---
+
+<div
+  class:list={[
+    'pfp relative shrink-0 overflow-hidden rounded-full border border-border bg-bg-subtle',
+    dimension,
+  ]}
+  data-pending
+  data-tiles-src={tileSrc}
+  role="img"
+  aria-label={alt}
+>
+  <Image
+    src={hoverSrc}
+    alt=""
+    aria-hidden="true"
+    loading="eager"
+    decoding="async"
+    widths={[256]}
+    sizes="128px"
+    class="pfp-hover absolute inset-0 h-full w-full object-cover object-top"
+  />
+
+  <div
+    class="pfp-grid absolute inset-0"
+    style={`grid-template-columns: repeat(${cols}, minmax(0, 1fr)); grid-template-rows: repeat(${cols}, minmax(0, 1fr));`}
+    aria-hidden="true"
+  >
+    {
+      tiles.map(({ x, y, delay }) => (
+        <span
+          class="pfp-tile"
+          style={`
+            background-image: url(${tileSrc});
+            background-size: ${cols * 100}% ${cols * 100}%;
+            background-position: ${x}% ${y}%;
+            --pfp-delay: ${delay}ms;
+          `}
+        />
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .pfp-grid {
+    display: grid;
+  }
+
+  .pfp-tile {
+    position: relative;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.34s ease-out;
+    transition-delay: var(--pfp-delay, 0ms);
+  }
+
+  .pfp:hover .pfp-tile,
+  .pfp:focus-within .pfp-tile {
+    opacity: 0;
+  }
+
+  /* Two independent guards, both needed.
+
+     data-pending holds the tiles closed until the opening scroll has stopped.
+     Arriving from another route leaves the cursor sitting where the avatar
+     lands, so :hover fires mid-scroll and the staggered fade reveals the hover
+     photo before the avatar slides out from under the pointer.
+
+     data-tiles-ready keeps the hover layer invisible until the base photo has
+     actually loaded, because it is requested as a CSS background and therefore
+     loses the race against an <img>.
+
+     The doubled :hover/:focus-within selectors only raise specificity so these
+     win over the rules above without !important. */
+  .pfp[data-pending] .pfp-tile,
+  .pfp[data-pending]:hover .pfp-tile,
+  .pfp[data-pending]:focus-within .pfp-tile {
+    opacity: 1;
+    transition: none;
+  }
+
+  .pfp:not([data-tiles-ready]) .pfp-hover {
+    opacity: 0;
+  }
+</style>
+
+<script>
+  ;(() => {
+    const pfp = document.querySelector<HTMLElement>('.pfp[data-pending]')
+    if (!pfp) return
+
+    let scrolled = false
+    const releaseHover = () => pfp.removeAttribute('data-pending')
+
+    window.addEventListener('scroll', () => (scrolled = true), { once: true, passive: true })
+
+    if ('onscrollend' in window) {
+      window.addEventListener('scrollend', releaseHover, { once: true })
+    }
+
+    window.setTimeout(() => {
+      if (!scrolled) releaseHover()
+    }, 250)
+
+    // Hard ceiling, so a scroll that never ends cannot leave the avatar locked.
+    window.setTimeout(releaseHover, 1500)
+
+    // Reveal the hover layer only once the base photo is decoded. Without this
+    // the <img> paints first and the wrong photo is visible until the tiles
+    // arrive. decode() also waits for the decode step, not just the download.
+    const tileSrc = pfp.dataset.tilesSrc
+    if (tileSrc) {
+      const probe = new Image()
+      probe.src = tileSrc
+      const ready = () => pfp.setAttribute('data-tiles-ready', '')
+      probe.decode().then(ready, ready)
+      // Ceiling for the case where the request is served from cache or errors.
+      window.setTimeout(ready, 1000)
+    } else {
+      pfp.setAttribute('data-tiles-ready', '')
+    }
+  })()
+</script>

@@ -1,0 +1,222 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { useTranslation, getLocaleOptions, stripLocalePrefix, type LangKey } from '@/i18n/utils'
+
+type SettingKey = 'animation' | 'layout'
+
+type OptionIcon = 'monitor' | 'power' | 'layout-default' | 'layout-wide' | 'layout-wider'
+
+type Option = {
+  value: string
+  key: string
+  icon: OptionIcon
+}
+
+interface Props {
+  lang: LangKey
+  localeSwitchHref?: string | null
+}
+
+const { lang, localeSwitchHref } = Astro.props
+const t = useTranslation(lang)
+
+const groups: { key: SettingKey; labelKey: string; options: Option[] }[] = [
+  {
+    key: 'animation',
+    labelKey: 'settings.animation',
+    options: [
+      { value: 'system', key: 'settings.system', icon: 'monitor' },
+      { value: 'on', key: 'settings.on', icon: 'power' },
+      { value: 'off', key: 'settings.off', icon: 'power' },
+    ],
+  },
+  {
+    key: 'layout',
+    labelKey: 'settings.layout',
+    options: [
+      { value: 'default', key: 'settings.default', icon: 'layout-default' },
+      { value: 'wide', key: 'settings.wide', icon: 'layout-wide' },
+      { value: 'wider', key: 'settings.wider', icon: 'layout-wider' },
+    ],
+  },
+]
+
+const localeOptions = getLocaleOptions({
+  lang,
+  localeFree: stripLocalePrefix(Astro.url.pathname),
+  localeSwitchHref,
+})
+---
+
+<div class="w-56 rounded-xl border border-border bg-bg p-1.5 shadow-lg">
+  <div class="px-2 py-1.5 not-last:border-b not-last:border-border">
+    <p class="mb-1 px-2 text-xs text-text-muted">{t('settings.language')}</p>
+    <div class="flex items-center gap-1">
+      <Icon name="languages" class="ml-2 h-4 w-4 shrink-0 text-text-muted" />
+      {
+        localeOptions.map((option) => {
+          return option.href ? (
+            <a
+              href={option.href}
+              hreflang={option.code}
+              lang={option.code}
+              aria-current={option.active ? 'true' : undefined}
+              class:list={[
+                'flex flex-1 items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-bg-subtle',
+                option.active ? 'font-medium text-text' : 'text-text-muted hover:text-text',
+              ]}
+            >
+              {option.label}
+              {option.active && <Icon name="check" class="h-4 w-4 text-accent" />}
+            </a>
+          ) : (
+            <span
+              aria-disabled={option.missing ? 'true' : undefined}
+              title={option.missing ? t('settings.notTranslated') : undefined}
+              class:list={[
+                'flex flex-1 items-center justify-between rounded-lg px-2 py-1.5 text-sm',
+                option.active ? 'font-medium text-text' : 'text-text-muted opacity-40',
+              ]}
+            >
+              {option.label}
+              {option.active && <Icon name="check" class="h-4 w-4 text-accent" />}
+            </span>
+          )
+        })
+      }
+    </div>
+  </div>
+
+  {
+    groups.map((group, index) => (
+      <div
+        role="radiogroup"
+        aria-label={t(group.labelKey)}
+        data-group={group.key}
+        class:list={['px-2 py-1.5', index !== groups.length - 1 && 'border-b border-border']}
+      >
+        <p class="mb-1 px-2 text-xs text-text-muted">{t(group.labelKey)}</p>
+        {group.options.map((option) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked="false"
+            tabindex="-1"
+            data-setting={group.key}
+            data-value={option.value}
+            class="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-bg-subtle aria-checked:bg-bg-subtle aria-checked:font-medium"
+          >
+            <Icon name={option.icon} class="h-4 w-4 shrink-0 text-text-muted" />
+            <span class="flex-1">{t(option.key)}</span>
+            <Icon name="check" class="option-check hidden h-4 w-4 text-accent" />
+          </button>
+        ))}
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  const DEFAULTS: Record<string, string> = {
+    animation: 'system',
+    layout: 'default',
+  }
+
+  function read(key: string): string {
+    return localStorage.getItem(key) || DEFAULTS[key]
+  }
+
+  function write(key: string, value: string): void {
+    localStorage.setItem(key, value)
+  }
+
+  function applySettings(): void {
+    const animation = read('animation')
+
+    if (animation === 'system') {
+      document.documentElement.removeAttribute('data-animation')
+    } else {
+      document.documentElement.setAttribute('data-animation', animation)
+    }
+
+    document.documentElement.setAttribute('data-layout', read('layout'))
+  }
+
+  function sync(): void {
+    document.querySelectorAll<HTMLButtonElement>('[data-setting]').forEach((button) => {
+      const setting = button.dataset.setting ?? ''
+      const active = read(setting) === button.dataset.value
+
+      button.setAttribute('aria-checked', String(active))
+      button.tabIndex = active ? 0 : -1
+      button.querySelector('.option-check')?.classList.toggle('hidden', !active)
+    })
+
+    applySettings()
+  }
+
+  function select(button: HTMLButtonElement): void {
+    const setting = button.dataset.setting
+    const value = button.dataset.value
+    if (!setting || !value) return
+
+    write(setting, value)
+    sync()
+  }
+
+  function focusGroup(group: HTMLElement, step: number | 'first' | 'last'): void {
+    const options = Array.from(group.querySelectorAll<HTMLButtonElement>('[data-setting]'))
+    if (options.length === 0) return
+
+    const current = options.findIndex((option) => option.tabIndex === 0)
+    let next: number
+
+    if (step === 'first') next = 0
+    else if (step === 'last') next = options.length - 1
+    else next = (Math.max(current, 0) + step + options.length) % options.length
+
+    const target = options[next]
+    target?.focus()
+    if (target) select(target)
+  }
+
+  if (!document.documentElement.dataset.settingsReady) {
+    document.documentElement.dataset.settingsReady = 'true'
+
+    sync()
+
+    document.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-setting]')
+      if (button) select(button)
+    })
+
+    document.addEventListener('keydown', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-setting]')
+      if (!button) return
+
+      const group = button.closest<HTMLElement>('[data-group]')
+      if (!group) return
+
+      switch (event.key) {
+        case 'ArrowDown':
+        case 'ArrowRight':
+          event.preventDefault()
+          focusGroup(group, 1)
+          break
+        case 'ArrowUp':
+        case 'ArrowLeft':
+          event.preventDefault()
+          focusGroup(group, -1)
+          break
+        case 'Home':
+          event.preventDefault()
+          focusGroup(group, 'first')
+          break
+        case 'End':
+          event.preventDefault()
+          focusGroup(group, 'last')
+          break
+      }
+    })
+  }
+</script>

@@ -1,0 +1,27 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import { SITE } from '@/lib/constants'
+import { useTranslation, getLang } from '@/i18n/utils'
+
+const lang = getLang(Astro.currentLocale)
+const t = useTranslation(lang)
+---
+
+<PageLayout title={t('resume.heading')} description={SITE.description[lang]}>
+  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+    <SectionLabel label={t('resume.heading')} class="mb-12" />
+    <div class="prose prose-neutral max-w-[70ch] dark:prose-invert">
+      <p class="text-lg">
+        {t('resume.download')}{' '}
+        <a href="/resume.pdf" target="_blank" class="text-accent hover:text-accent-hover">PDF</a>
+      </p>
+      <h2>{t('resume.experience')}</h2>
+      <p>{t('resume.experiencePlaceholder')}</p>
+      <h2>{t('resume.skills')}</h2>
+      <p>{t('resume.skillsPlaceholder')}</p>
+      <h2>{t('resume.education')}</h2>
+      <p>{t('resume.educationPlaceholder')}</p>
+    </div>
+  </div>
+</PageLayout>

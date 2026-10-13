@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content'
+import PageLayout from '@/layouts/PageLayout.astro'
+import ProjectCard from '@/components/ui/ProjectCard.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import { SITE } from '@/lib/constants'
+import { useTranslation, getLang } from '@/i18n/utils'
+
+const lang = getLang(Astro.currentLocale)
+const t = useTranslation(lang)
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order || 999) - (b.data.order || 999)
+)
+---
+
+<PageLayout title={t('projects.heading')} description={SITE.description[lang]}>
+  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+    <SectionLabel label={t('projects.heading')} class="mb-12" />
+    {
+      projects.length === 0 ? (
+        <p class="text-text-muted">{t('projects.empty')}</p>
+      ) : (
+        <div class="space-y-6">
+          {projects.map((project) => (
+            <ProjectCard project={project} lang={lang} />
+          ))}
+        </div>
+      )
+    }
+  </div>
+</PageLayout>

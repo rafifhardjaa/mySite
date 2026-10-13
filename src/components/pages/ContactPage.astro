@@ -1,0 +1,19 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import ContactForm from '@/components/sections/ContactForm.astro'
+import { SITE } from '@/lib/constants'
+import { useTranslation, getLang } from '@/i18n/utils'
+
+const lang = getLang(Astro.currentLocale)
+const t = useTranslation(lang)
+---
+
+<PageLayout title={t('contact.navLabel')} description={SITE.description[lang]}>
+  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+    <SectionLabel label={t('contact.navLabel')} class="mb-6" />
+    <h1 class="mb-4 text-3xl font-semibold">{t('contact.heading')}</h1>
+    <p class="mb-10 max-w-prose leading-relaxed text-text-muted">{t('contact.body')}</p>
+    <ContactForm lang={lang} />
+  </div>
+</PageLayout>

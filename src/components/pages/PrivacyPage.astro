@@ -1,0 +1,83 @@
+---
+import DocsLayout from '@/layouts/DocsLayout.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import { SITE } from '@/lib/constants'
+import { useTranslation, getLang, formatShortDate } from '@/i18n/utils'
+
+const lang = getLang(Astro.currentLocale)
+const t = useTranslation(lang)
+
+interface PrivacySection {
+  id: string
+  headingKey: string
+  bodyKey: string
+  listKeys?: string[]
+}
+
+const sections: PrivacySection[] = [
+  {
+    id: 'what-this-site-does-not-do',
+    headingKey: 'privacy.dontDo.heading',
+    bodyKey: 'privacy.dontDo.body',
+  },
+  { id: 'hosting-and-dns', headingKey: 'privacy.host.heading', bodyKey: 'privacy.host.body' },
+  { id: 'spam-protection', headingKey: 'privacy.bot.heading', bodyKey: 'privacy.bot.body' },
+  { id: 'sending-a-message', headingKey: 'privacy.form.heading', bodyKey: 'privacy.form.body' },
+  {
+    id: 'browser-storage',
+    headingKey: 'privacy.storage.heading',
+    bodyKey: 'privacy.storage.body',
+    listKeys: [
+      'privacy.storage.theme',
+      'privacy.storage.lang',
+      'privacy.storage.animation',
+      'privacy.storage.layout',
+    ],
+  },
+  { id: 'links-elsewhere', headingKey: 'privacy.links.heading', bodyKey: 'privacy.links.body' },
+  { id: 'your-data', headingKey: 'privacy.rights.heading', bodyKey: 'privacy.rights.body' },
+  { id: 'changes', headingKey: 'privacy.changes.heading', bodyKey: 'privacy.changes.body' },
+]
+
+const headings = sections.map((section) => ({
+  depth: 2,
+  slug: section.id,
+  text: t(section.headingKey),
+}))
+---
+
+<DocsLayout
+  title={t('privacy.heading')}
+  description={SITE.description[lang]}
+  headings={headings}
+  tocLabel={t('toc.label')}
+>
+  <SectionLabel label={t('privacy.heading')} class="mb-4" />
+  <p class="text-sm text-text-subtle">
+    {t('privacy.updated')}: {formatShortDate(new Date(2026, 9, 12), lang)}
+  </p>
+  <p class="mt-8 leading-relaxed text-text">{t('privacy.intro')}</p>
+
+  {
+    sections.map((section) => (
+      <section class="mt-12">
+        <h2 id={section.id} class="mb-3 text-xl font-semibold scroll-mt-24">
+          {t(section.headingKey)}
+        </h2>
+        <p class="leading-relaxed text-text-muted">{t(section.bodyKey)}</p>
+        {section.listKeys && (
+          <ul class="mt-4 space-y-2">
+            {section.listKeys.map((key) => (
+              <li class="flex items-baseline gap-3 text-text">
+                <span class="text-accent" aria-hidden="true">
+                  →
+                </span>
+                <span>{t(key)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))
+  }
+</DocsLayout>

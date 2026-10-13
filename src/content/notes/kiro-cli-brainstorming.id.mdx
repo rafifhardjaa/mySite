@@ -1,0 +1,92 @@
+---
+urlPath: kiro-cli-brainstorming
+title: "kiro-cli: Teman Nyata untuk Brainstorming Sebelum Membangun"
+description: "kiro-cli adalah agen coding AI di terminal. Instalasi, login, dan alur brainstorming yang saya pakai sebelum membuat sesuatu."
+publishedAt: 2026-10-12
+tags: ["ai", "cli", "perkakas"]
+draft: false
+lang: id
+---
+
+## Pendahuluan
+
+Sebelum membuat sesuatu, saya mendebatnya dulu.
+[kiro-cli](https://github.com/kirodotdev/Kiro) adalah agen coding AI yang hidup
+di terminal, dibuat oleh tim Kiro di AWS. Ia membaca kode, menjalankan
+perintah, dan bertanya sebelum tindakan destruktif — tetapi cara paling sering
+saya pakai justru lebih awal: sebagai teman brainstorming yang membantu
+memikirkan ide sampai tuntas sebelum satu berkas pun ada.
+
+Repo publiknya hanya pelacak issue; source produknya tidak ada di sana.
+Dokumentasi ada di [kiro.dev/docs/cli](https://kiro.dev/docs/cli/).
+
+## Instalasi
+
+macOS atau Linux, satu perintah:
+
+```bash
+curl -fsSL https://cli.kiro.dev/install | bash
+```
+
+Lalu login — tidak butuh akun AWS:
+
+```bash
+kiro-cli login
+```
+
+GitHub, Google, atau AWS Builder ID bisa dipakai. Ada tier gratis (Kiro Free,
+50 kredit), cukup untuk mencoba seluruh alur di bawah.
+
+Jaga agar tetap terbaru:
+
+```bash
+kiro-cli update
+```
+
+## Penggunaan
+
+### Mulai dari ide, bukan kode
+
+```bash
+cd my-project
+kiro-cli chat
+```
+
+Jelaskan hal yang ingin dibuat dengan kata-kata biasa: fungsinya apa, untuk
+siapa, dan apa yang masih ragu. Minta ia menantang ide itu, bukan sekadar
+setuju.
+
+### Rencanakan sebelum membangun
+
+```bash
+/plan
+```
+
+`/plan` membuat agen menyusun langkah sebelum bertindak. Untuk hal yang
+benar-benar baru, saya minta dua atau tiga pendekatan beserta trade-off-nya,
+pilih satu, dan baru biarkan ia menyentuh berkas.
+
+### Beri konteks dengan @
+
+Di dalam sesi, `@` menarik berkas langsung ke percakapan:
+
+```text
+Tinjau @src/api/routes.ts dan beri tahu apa yang rusak jika saya tambah mode offline
+```
+
+Tanpa tool call, tanpa urusan izin — isi berkas langsung masuk inline.
+
+### Satu pertanyaan, tanpa sesi
+
+```bash
+kiro-cli chat --no-interactive "berkas konfigurasi mana yang menentukan port di repo ini?"
+```
+
+Cocok dari skrip, atau saat butuh jawaban tanpa membuka UI penuh.
+
+## Referensi
+
+- [Situs Kiro CLI](https://kiro.dev/cli/)
+- [Dokumentasi Kiro CLI](https://kiro.dev/docs/cli/)
+- [Pelacak issue publik](https://github.com/kirodotdev/Kiro)
+- [Referensi perintah CLI](https://kiro.dev/docs/reference/cli-commands/)

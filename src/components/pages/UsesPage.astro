@@ -1,0 +1,124 @@
+---
+import { Image } from 'astro:assets'
+import DocsLayout from '@/layouts/DocsLayout.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import Icon from '@/components/ui/Icon.astro'
+import gallerySetup from '@/assets/gallery-4.jpg'
+import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
+import { useTranslation, getLang, localePath, type LangKey } from '@/i18n/utils'
+
+const lang: LangKey = getLang(Astro.currentLocale)
+const t = useTranslation(lang)
+
+interface Row {
+  id: string
+  labelKey: string
+  titleKey: string
+  bodyKey: string
+  linkKey?: string
+  linkHref?: string
+}
+
+const rows: Row[] = [
+  { id: 'code', labelKey: 'uses.rowCode', titleKey: 'uses.codeTitle', bodyKey: 'uses.codeBody' },
+  { id: 'api', labelKey: 'uses.rowApi', titleKey: 'uses.apiTitle', bodyKey: 'uses.apiBody' },
+  { id: 'data', labelKey: 'uses.rowData', titleKey: 'uses.dataTitle', bodyKey: 'uses.dataBody' },
+  {
+    id: 'git',
+    labelKey: 'uses.rowGit',
+    titleKey: 'uses.gitTitle',
+    bodyKey: 'uses.gitBody',
+    linkKey: 'uses.gitLink',
+    linkHref: localePath(lang, '/notes/gitleaks-before-push'),
+  },
+  {
+    id: 'network',
+    labelKey: 'uses.rowNetwork',
+    titleKey: 'uses.networkTitle',
+    bodyKey: 'uses.networkBody',
+  },
+  {
+    id: 'notes',
+    labelKey: 'uses.rowNotes',
+    titleKey: 'uses.notesTitle',
+    bodyKey: 'uses.notesBody',
+  },
+  {
+    id: 'daily',
+    labelKey: 'uses.rowDaily',
+    titleKey: 'uses.dailyTitle',
+    bodyKey: 'uses.dailyBody',
+  },
+]
+
+const headings = [
+  { depth: 2, slug: 'setup', text: t('uses.setupTitle') },
+  ...rows.map((row) => ({ depth: 2, slug: row.id, text: t(row.titleKey) })),
+]
+---
+
+<DocsLayout
+  title={t('uses.heading')}
+  description={SITE.description[lang]}
+  headings={headings}
+  tocLabel={t('toc.label')}
+>
+  <SectionLabel label={t('uses.heading')} class="mb-6" />
+  <p class="max-w-[70ch] text-lg leading-relaxed text-text-muted">{t('uses.intro')}</p>
+
+  <div class="mt-8 overflow-hidden rounded-2xl border border-border bg-bg-subtle">
+    <Image
+      src={gallerySetup}
+      alt={t('home.gallery.photo4')}
+      widths={[800, 1200]}
+      sizes="(max-width: 640px) 100vw, 800px"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      class="max-h-[26rem] w-full object-cover"
+    />
+  </div>
+
+  <h2 id="setup" class="mt-12 mb-3 text-xl font-semibold scroll-mt-24">{t('uses.setupTitle')}</h2>
+  <div data-code-enhance>
+    <pre><code class="language-bash"># Daily apps
+brew install --cask visual-studio-code firefox bruno postman gitkraken dbeaver-community obsidian orbstack herd openvpn-connect orca
+
+# CLI tools I wrote about
+brew install mole gitleaks</code></pre>
+  </div>
+  <div class="mt-4">
+    <a href={localePath(lang, '/notes/mole-mac-cleanup')} class={INLINE_LINK_CLASS}>
+      {t('uses.proofMole')}
+      <Icon name="arrow-up-right" class="h-3 w-3" />
+    </a>
+  </div>
+
+  <hr class="my-10 border-border" />
+
+  <div class="divide-y divide-border">
+    {
+      rows.map((row) => (
+        <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
+          <p class="pt-1 font-mono text-sm text-text-muted">{t(row.labelKey)}</p>
+          <div>
+            <h2 id={row.id} class="text-2xl font-medium scroll-mt-24">
+              {t(row.titleKey)}
+            </h2>
+            <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t(row.bodyKey)}</p>
+            {row.linkKey && row.linkHref && (
+              <div class="mt-4">
+                <a href={row.linkHref} class={INLINE_LINK_CLASS}>
+                  {t(row.linkKey)}
+                  <Icon name="arrow-up-right" class="h-3 w-3" />
+                </a>
+              </div>
+            )}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <p class="mt-12 text-sm text-text-subtle">{t('uses.shelved')}</p>
+</DocsLayout>

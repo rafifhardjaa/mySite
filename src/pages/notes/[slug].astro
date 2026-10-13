@@ -1,0 +1,23 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { render } from 'astro:content'
+import NoteLayout from '@/layouts/NoteLayout.astro'
+import { noteUrlSlug } from '@/i18n/utils'
+import { getNoteStaticPaths } from '@/lib/notes'
+
+export const getStaticPaths = (() => getNoteStaticPaths('en')) satisfies GetStaticPaths
+
+const { note } = Astro.props
+const { Content, headings } = await render(note)
+---
+
+<NoteLayout
+  title={note.data.title}
+  description={note.data.description}
+  publishedAt={note.data.publishedAt}
+  updatedAt={note.data.updatedAt}
+  notePath={noteUrlSlug(note)}
+  headings={headings}
+>
+  <Content />
+</NoteLayout>

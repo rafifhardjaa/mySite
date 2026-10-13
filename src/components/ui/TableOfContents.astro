@@ -1,0 +1,185 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props {
+  headings: Heading[]
+  label: string
+  interactive?: boolean
+  headingId?: string
+  // The mobile disclosure in DocsLayout renders its own label in the trigger, so
+  // the list must not repeat it. Without this the heading appears twice.
+  showLabel?: boolean
+}
+
+const {
+  headings,
+  label,
+  interactive = true,
+  headingId = 'toc-heading',
+  showLabel = true,
+} = Astro.props
+
+// h2 and h3 only: deeper nesting makes the rail unreadable, and the h1 is the title.
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3)
+---
+
+{
+  items.length > 1 && (
+    <nav
+      aria-labelledby={showLabel ? headingId : undefined}
+      aria-label={showLabel ? undefined : label}
+      class="text-sm"
+      data-toc={interactive ? headingId : undefined}
+    >
+      {showLabel && (
+        <p id={headingId} class="mb-3 flex items-center gap-2 font-medium text-text">
+          <Icon name="list" class="h-4 w-4 text-text-muted" />
+          {label}
+        </p>
+      )}
+      <div class="relative">
+        <ul class="space-y-0.5 border-l border-border">
+          {items.map((heading) => (
+            <li>
+              <a
+                href={`#${heading.slug}`}
+                data-toc-link={interactive ? heading.slug : undefined}
+                class:list={[
+                  '-ml-px block border-l-2 border-transparent py-1 leading-snug text-text-muted transition-colors hover:border-border hover:text-text',
+                  heading.depth === 3 ? 'pl-6 text-xs' : 'pl-3',
+                ]}
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+        {interactive && (
+          <span
+            data-toc-marker
+            aria-hidden="true"
+            class="pointer-events-none absolute top-0 left-0 h-0 w-0.5 rounded-full bg-accent opacity-0 transition-[top,height,opacity] duration-200 ease-[cubic-bezier(0.2,0,0.2,1)]"
+          />
+        )}
+      </div>
+    </nav>
+  )
+}
+
+<script>
+  // Scrollspy for the "On this page" rail.
+  //
+  // A bare IntersectionObserver cannot rank sections, so this highlights the
+  // last heading that has already crossed the reading line. The observer's
+  // rootMargin and the reading line below are kept in agreement (0px 0px -70%),
+  // otherwise the highlighted entry disagrees with where the reader is looking.
+  //
+  // Each rail is scoped to its own <nav> because DocsLayout renders two of them
+  // on the same page: a collapsible one for small screens and a sticky rail for
+  // large ones. A single global lookup would let one rail drive the other.
+  ;(() => {
+    const reducedMotion = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.getAttribute('data-animation') === 'off'
+
+    // The fixed bar sits at the top from the md breakpoint up. Below that the
+    // nav dock is pinned to the bottom, where it cannot cover a heading.
+    const headingOffset = () => (window.innerWidth >= 768 ? 72 : 0)
+
+    for (const nav of document.querySelectorAll<HTMLElement>('[data-toc]')) {
+      const links = new Map<string, HTMLAnchorElement>()
+
+      for (const link of nav.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')) {
+        const id = link.dataset.tocLink
+        if (id) links.set(id, link)
+      }
+
+      const targets = [...links.keys()]
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null)
+
+      const marker = nav.querySelector<HTMLElement>('[data-toc-marker]')
+      const list = nav.querySelector<HTMLElement>('ul')
+
+      const placeMarker = (id: string) => {
+        if (!marker || !list) return
+        const link = links.get(id)
+        if (!link) return
+        marker.style.top = `${link.getBoundingClientRect().top - list.getBoundingClientRect().top}px`
+        marker.style.height = `${link.getBoundingClientRect().height}px`
+        marker.style.opacity = '1'
+      }
+
+      const scrollToHeading = (id: string) => {
+        const target = document.getElementById(id)
+        if (!target) return
+
+        window.scrollTo({
+          top: target.getBoundingClientRect().top + window.scrollY - headingOffset(),
+          behavior: reducedMotion() ? 'instant' : 'smooth',
+        })
+      }
+
+      if (targets.length === 0) {
+        // Still let the plain anchors scroll correctly on a non-interactive rail.
+        continue
+      }
+
+      const paint = () => {
+        const readingLine = window.innerHeight * 0.3
+        let active: string | undefined
+
+        for (const target of targets) {
+          if (target.getBoundingClientRect().top <= readingLine) active = target.id
+        }
+
+        // At the very bottom, the last heading wins even if it never crossed the line.
+        const atBottom =
+          window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+
+        if (atBottom) active = targets[targets.length - 1]?.id
+
+        for (const [id, link] of links) {
+          const isActive = id === active
+
+          if (isActive) {
+            link.classList.remove('text-text-muted', 'border-transparent')
+            link.classList.add('text-text', 'font-medium')
+            link.setAttribute('aria-current', 'true')
+          } else {
+            link.classList.remove('text-text', 'font-medium')
+            link.classList.add('text-text-muted', 'border-transparent')
+            link.removeAttribute('aria-current')
+          }
+        }
+
+        if (active) placeMarker(active)
+      }
+
+      for (const [id, link] of links) {
+        link.addEventListener('click', (event) => {
+          event.preventDefault()
+          scrollToHeading(id)
+          // Repaint before the scroll settles so the tapped entry is marked at once.
+          placeMarker(id)
+          window.history.replaceState(null, '', `#${id}`)
+        })
+      }
+
+      const observer = new IntersectionObserver(paint, { rootMargin: '0px 0px -70% 0px' })
+
+      for (const target of targets) observer.observe(target)
+
+      window.addEventListener('scroll', paint, { passive: true })
+      window.addEventListener('resize', paint, { passive: true })
+      window.addEventListener('hashchange', paint)
+      paint()
+    }
+  })()
+</script>

@@ -1,0 +1,139 @@
+---
+urlPath: mole-mac-cleanup
+title: "Mole: Bantu Mac Saya Bernapas Lagi"
+description: "Panduan singkat Mole untuk macOS: instalasi, pratinjau pembersihan secara aman, purge artefak project, dan cek kesehatan sistem."
+publishedAt: 2026-10-12
+tags: ["macos", "perkakas", "cli"]
+draft: false
+lang: id
+---
+
+import { Image } from 'astro:assets'
+import moleClean from '@/assets/mole-clean.png'
+
+## Pendahuluan
+
+Saat macOS terasa lambat tanpa sebab jelas, penyebabnya sering penumpukan
+biasa: cache, log, sisa data aplikasi, dan artefak project yang bisa dibangun
+ulang. Catatan ini memakai [Mole](https://github.com/tw93/Mole), CLI macOS
+sumber terbuka, untuk menemukan beban itu dan menghapusnya tanpa menyerahkan
+disk ke aplikasi pembersih tertutup.
+
+Mole hanya untuk macOS, mendukung macOS 12 ke atas, dan tidak boleh dijalankan
+dengan `sudo`. Rilis saat ini `V1.59.1`.
+
+## Instalasi
+
+### Homebrew
+
+```bash
+brew install mole
+```
+
+Perintah ini hanya menginstal CLI.
+
+### Skrip instalasi
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash
+```
+
+Kunci versinya agar tidak mengikuti `main`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash -s -- 1.59.1
+```
+
+Untuk menghindari `sudo` saat update berikutnya, instal di home directory:
+
+```bash
+mkdir -p "$HOME/.local/bin"
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tw93/mole/main/install.sh | bash -s -- --prefix "$HOME/.local/bin"
+```
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Penggunaan
+
+### Buka menu
+
+```bash
+mo
+```
+
+`mo` tanpa argumen membuka Clean, Uninstall, Optimize, Analyze, dan Status.
+Tombol panah dan Vim keys sama-sama bisa dipakai.
+
+### Pratinjau pembersihan dulu
+
+Mole tidak dry-run secara default. Selalu pratinjau pekerjaan destruktif:
+
+```bash
+mo clean --dry-run
+```
+
+```bash
+sudo -v && mo clean --dry-run
+```
+
+Bentuk kedua memberi pratinjau lebih lengkap karena pratinjau tanpa kredensial
+sudo melewatkan path yang butuh akses administrator.
+
+### Purge artefak project
+
+`purge` terpisah dari `clean` dan menargetkan berkas yang bisa dibangun ulang
+seperti `node_modules`, `dist`, `target`, `venv`, `.next`, `DerivedData`, dan
+`Pods`:
+
+```bash
+mo purge --dry-run
+```
+
+```bash
+mo purge --yes
+```
+
+Aktivitas terbaru dilewati secara default, repo bersarang dilindungi, dan
+worktree tidak pernah dihapus.
+
+### Temukan ruang, lalu cek kesehatan
+
+```bash
+mo analyze
+```
+
+```bash
+mo status
+```
+
+```bash
+mo history --limit 20
+```
+
+Pakai `analyze` untuk melihat pemakai ruang, `status` untuk cek kesehatan
+read-only, dan `history` untuk meninjau apa yang sudah dihapus.
+
+## Bukti
+
+Bukan screenshot stok — Mac saya sendiri setelah sekali jalan:
+
+<Image
+  src={moleClean}
+  alt="Output terminal mo clean: 1,44 GB dibersihkan dari 129 item, membebaskan 4,95 GB"
+  widths={[800, 1200]}
+  sizes="(max-width: 640px) 100vw, 800px"
+  loading="lazy"
+  decoding="async"
+  class="rounded-2xl border border-border"
+/>
+
+## Referensi
+
+- [Repositori Mole](https://github.com/tw93/Mole)
+- [Rilis Mole](https://github.com/tw93/Mole/releases)
+- [Homebrew](https://brew.sh/)

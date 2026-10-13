@@ -1,0 +1,33 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  aria-label="Toggle theme"
+  title="Toggle theme"
+  class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle"
+>
+  <Icon name="contrast" class="h-[18px] w-[18px] text-text" />
+</button>
+
+<script>
+  // The toggle can be rendered more than once (top bar + mobile dock), so it is
+  // bound by delegation instead of by id — a duplicated id would silently leave
+  // the second instance dead.
+  if (!document.documentElement.dataset.themeToggleReady) {
+    document.documentElement.dataset.themeToggleReady = 'true'
+
+    document.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLElement>('[data-theme-toggle]')
+      if (!button) return
+
+      const isDark = document.documentElement.classList.contains('dark')
+      const nextTheme = isDark ? 'light' : 'dark'
+
+      document.documentElement.classList.toggle('dark', nextTheme === 'dark')
+      localStorage.setItem('theme', nextTheme)
+    })
+  }
+</script>

@@ -1,0 +1,212 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import TableOfContents from '@/components/ui/TableOfContents.astro'
+import Icon from '@/components/ui/Icon.astro'
+
+export interface TocHeading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props {
+  title: string
+  description?: string
+  headings?: TocHeading[]
+  tocLabel: string
+  localeSwitchHref?: string | null
+  hasAlternate?: boolean
+}
+
+const { title, description, headings = [], tocLabel, localeSwitchHref, hasAlternate } = Astro.props
+const hasToc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3).length > 1
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  localeSwitchHref={localeSwitchHref}
+  hasAlternate={hasAlternate}
+>
+  <article data-code-enhance class="mx-auto w-full max-w-6xl px-6 pt-8 pb-16">
+    {
+      hasToc && (
+        // A native <details> cannot be animated: it snaps between open and closed.
+        // This is a button plus a grid-rows 0fr->1fr panel, so the height and the
+        // fade are both transitionable. global.css already forces transitions to
+        // none for prefers-reduced-motion and data-animation="off", so the
+        // animation is skipped for those visitors without extra branching here.
+        <div
+          data-toc-disclosure
+          class="group mb-10 rounded-2xl border border-border bg-bg-subtle/50 lg:hidden"
+        >
+          <button
+            type="button"
+            data-toc-disclosure-toggle
+            aria-expanded="false"
+            aria-controls="toc-mobile-panel"
+            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-text"
+          >
+            <span>{tocLabel}</span>
+            <Icon
+              name="chevron-down"
+              class="h-4 w-4 shrink-0 text-text-muted transition-transform duration-300 ease-[cubic-bezier(0.2,0,0.2,1)] group-data-[open]:rotate-180"
+            />
+          </button>
+          <div
+            id="toc-mobile-panel"
+            role="region"
+            aria-label={tocLabel}
+            data-toc-disclosure-panel
+            class="invisible grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity,visibility] duration-300 ease-[cubic-bezier(0.2,0,0.2,1)] group-data-[open]:visible group-data-[open]:grid-rows-[1fr] group-data-[open]:opacity-100"
+          >
+            <div class="overflow-hidden">
+              <div class="px-4 pb-4">
+                <TableOfContents
+                  headings={headings}
+                  label={tocLabel}
+                  interactive={false}
+                  headingId="toc-heading-mobile"
+                  showLabel={false}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    <div class="lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start lg:gap-16">
+      <div class="min-w-0">
+        <slot />
+      </div>
+      <aside class="hidden lg:block lg:w-64 lg:shrink-0">
+        <div class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pb-8">
+          <TableOfContents headings={headings} label={tocLabel} />
+        </div>
+      </aside>
+    </div>
+  </article>
+  <script>
+    // Collapsible table of contents for small screens.
+    //
+    // aria-expanded on the button carries the state, and data-open on the wrapper
+    // drives the panel animation, so the visual state and the accessible state
+    // cannot drift apart. Escape closes it, matching the settings menus.
+    ;(() => {
+      for (const root of document.querySelectorAll<HTMLElement>('[data-toc-disclosure]')) {
+        const toggle = root.querySelector<HTMLButtonElement>('[data-toc-disclosure-toggle]')
+        if (!toggle) continue
+
+        const setOpen = (open: boolean) => {
+          toggle.setAttribute('aria-expanded', String(open))
+          root.toggleAttribute('data-open', open)
+        }
+
+        toggle.addEventListener('click', () => {
+          setOpen(toggle.getAttribute('aria-expanded') !== 'true')
+        })
+
+        root.addEventListener('keydown', (event) => {
+          if (event.key !== 'Escape') return
+          setOpen(false)
+          toggle.focus()
+        })
+      }
+    })()
+  </script>
+  <script>
+    // Docs-style code blocks for notes. Astro/Shiki already supplies syntax colours;
+    // this adds a shell badge and a copy button without changing the code itself.
+    ;(() => {
+      const article = document.querySelector('[data-code-enhance]')
+      if (!article) return
+
+      const isIndonesian = document.documentElement.lang.toLowerCase().startsWith('id')
+      const copyLabel = isIndonesian ? 'Salin' : 'Copy'
+      const copiedLabel = isIndonesian ? 'Disalin' : 'Copied'
+      const copyAriaLabel = isIndonesian ? 'Salin kode ke papan klip' : 'Copy code to clipboard'
+
+      const TERMINAL_SVG =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="m7 9 3 3-3 3" /><path d="M13 15h4" /></svg>'
+      const COPY_SVG =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>'
+      const CHECK_SVG =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>'
+
+      const labelFor = (language: string) => {
+        if (!language) return 'Terminal'
+        if (['bash', 'sh', 'shell', 'zsh', 'terminal'].includes(language)) return 'Terminal'
+        if (language === 'yml') return 'YAML'
+        if (['text', 'txt', 'plain', 'plaintext', 'none'].includes(language)) return 'Text'
+        return language.toUpperCase()
+      }
+
+      const fallbackCopy = (text: string) => {
+        const area = document.createElement('textarea')
+        area.value = text
+        area.setAttribute('readonly', '')
+        area.style.position = 'fixed'
+        area.style.opacity = '0'
+        document.body.appendChild(area)
+        area.select()
+        try {
+          document.execCommand('copy')
+        } catch {
+          // Clipboard fallback is best-effort only.
+        }
+        area.remove()
+      }
+
+      for (const pre of Array.from(article.querySelectorAll('pre'))) {
+        if (pre.closest('.note-code')) continue
+        const code = pre.querySelector('code')
+        if (!code) continue
+
+        const match = code.className.match(/language-([\w+-]+)/)
+        const language = (pre.dataset.language || (match ? match[1] : '')).toLowerCase()
+
+        const wrapper = document.createElement('div')
+        wrapper.className = 'note-code'
+
+        const bar = document.createElement('div')
+        bar.className = 'note-code-bar'
+
+        const badge = document.createElement('span')
+        badge.className = 'note-code-label'
+        badge.innerHTML = `${TERMINAL_SVG}<span></span>`
+        const badgeText = badge.querySelector('span')
+        if (badgeText) badgeText.textContent = labelFor(language)
+
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'note-code-copy'
+        button.innerHTML = `${COPY_SVG}<span>${copyLabel}</span>`
+        button.setAttribute('aria-label', copyAriaLabel)
+
+        const setState = (copied: boolean) => {
+          const next = copied ? copiedLabel : copyLabel
+          button.innerHTML = `${copied ? CHECK_SVG : COPY_SVG}<span>${next}</span>`
+        }
+
+        button.addEventListener('click', async () => {
+          const text = (code.textContent || '').replace(/\n+$/, '')
+          try {
+            await navigator.clipboard.writeText(text)
+          } catch {
+            fallbackCopy(text)
+          }
+          setState(true)
+          window.setTimeout(() => setState(false), 1600)
+        })
+
+        const body = document.createElement('div')
+        body.className = 'note-code-body'
+
+        bar.append(badge, button)
+        pre.replaceWith(wrapper)
+        body.append(pre)
+        wrapper.append(bar, body)
+      }
+    })()
+  </script>
+</PageLayout>

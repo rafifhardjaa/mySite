@@ -1,0 +1,105 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { SITE } from '@/lib/constants'
+import { getLang, useTranslation, localePath, type LangKey } from '@/i18n/utils'
+
+type FooterLink = {
+  href: string
+  label: string
+  labelKey?: string
+  external?: boolean
+  icon?: 'rss'
+}
+
+interface Props {
+  lang: LangKey
+}
+
+const { lang } = Astro.props
+const t = useTranslation(lang)
+
+const handle = SITE.github.replace(/^https?:\/\/github\.com\//, '@')
+
+const columns: { headingKey: string; links: FooterLink[] }[] = [
+  {
+    headingKey: 'footer.thisSite',
+    links: [
+      { href: '/notes', labelKey: 'nav.notes' },
+      { href: '/now', labelKey: 'nav.now' },
+      { href: '/uses', labelKey: 'nav.uses' },
+      { href: '/contact', labelKey: 'contact.navLabel' },
+    ],
+  },
+  {
+    headingKey: 'footer.resources',
+    links: [
+      { href: '/projects', labelKey: 'nav.projects' },
+      { href: '/resume', labelKey: 'resume.heading' },
+      { href: '/notes/rss.xml', labelKey: 'footer.rss', icon: 'rss' },
+      { href: '/privacy', labelKey: 'privacy.navLabel' },
+      { href: SITE.github, labelKey: 'footer.source', external: true },
+    ],
+  },
+  {
+    headingKey: 'footer.connect',
+    links: [
+      { href: SITE.github, label: 'GitHub', external: true },
+      { href: SITE.linkedin, label: 'LinkedIn', external: true },
+      { href: `mailto:${SITE.email}`, label: 'Email' },
+    ],
+  },
+]
+---
+
+<footer class="mt-16 border-t border-border py-12">
+  <div class="mx-auto layout-container px-6">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-baseline sm:justify-between">
+      <div>
+        <p class="font-mono-jb text-sm text-text">{handle}</p>
+        <p class="mt-1 font-mono-jb text-xs text-text-muted">
+          {t('footer.rights')} ©{new Date().getFullYear()}
+          {SITE.name}
+        </p>
+      </div>
+
+      <a href={localePath(lang, '/now')} class="group flex flex-col text-right">
+        <span class="flex flex-col">
+          <span class="text-xs text-text-muted">{t('footer.currently')}</span>
+          <span class="text-sm text-text transition-colors group-hover:text-accent">
+            {SITE.role[lang]}
+          </span>
+        </span>
+      </a>
+    </div>
+
+    <div class="mt-10 grid gap-8 sm:grid-cols-3">
+      {
+        columns.map((column) => (
+          <div>
+            <h2 class="font-mono-jb text-xs font-medium uppercase tracking-wider text-text-muted">
+              {t(column.headingKey)}
+            </h2>
+            <ul class="mt-4 space-y-3">
+              {column.links.map((link) => {
+                const href = link.external ? link.href : localePath(lang, link.href)
+                return (
+                  <li>
+                    <a
+                      href={href}
+                      {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
+                    >
+                      {link.labelKey ? t(link.labelKey) : link.label}
+                      {link.icon === 'rss' && <Icon name="rss" class="h-3 w-3 text-text-muted" />}
+                      {link.external && <Icon name="arrow-up-right" class="h-3 w-3" />}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</footer>

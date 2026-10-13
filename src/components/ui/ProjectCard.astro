@@ -1,0 +1,66 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { useTranslation, type LangKey } from '@/i18n/utils'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  project: CollectionEntry<'projects'>
+  lang: LangKey
+}
+
+const { project, lang } = Astro.props
+const t = useTranslation(lang)
+const { title, role, description, techStack, links } = project.data
+---
+
+<article class="rounded-xl border border-border p-5 transition-colors hover:border-accent/50">
+  <div class="mb-2 flex items-start justify-between">
+    <h3 class="text-xl font-medium">{title}</h3>
+    <span
+      class="rounded-full border border-border bg-bg-subtle px-2 py-0.5 text-xs text-text-muted"
+    >
+      {role}
+    </span>
+  </div>
+
+  <p class="mb-4 text-text-muted">{description[lang]}</p>
+
+  <div class="mb-3 flex flex-wrap gap-1.5">
+    {
+      techStack.map((tech) => (
+        <span class="rounded-full border border-border bg-bg-subtle px-2 py-0.5 text-xs text-text-muted">
+          {tech}
+        </span>
+      ))
+    }
+  </div>
+
+  <div class="flex flex-wrap gap-4">
+    {
+      links.live && (
+        <a
+          href={links.live}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent-hover"
+        >
+          {t('projects.live')}
+          <Icon name="arrow-up-right" class="h-3 w-3" />
+        </a>
+      )
+    }
+    {
+      links.repo && (
+        <a
+          href={links.repo}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent-hover"
+        >
+          {t('projects.repo')}
+          <Icon name="arrow-up-right" class="h-3 w-3" />
+        </a>
+      )
+    }
+  </div>
+</article>

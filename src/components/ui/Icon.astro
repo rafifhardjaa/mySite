@@ -1,0 +1,59 @@
+---
+import { Icon as AstroIcon } from 'astro-icon/components'
+
+type IconName =
+  | 'github'
+  | 'linkedin'
+  | 'mail'
+  | 'arrow-up-right'
+  | 'rss'
+  | 'sliders'
+  | 'languages'
+  | 'list'
+  | 'chevron-down'
+  | 'check'
+  | 'monitor'
+  | 'power'
+  | 'contrast'
+  | 'layout-default'
+  | 'layout-wide'
+  | 'layout-wider'
+  | 'nav-home'
+  | 'nav-notes'
+  | 'nav-now'
+  | 'nav-uses'
+  | 'nav-contact'
+
+const ICONS: Record<IconName, string> = {
+  github: 'lucide:github',
+  linkedin: 'lucide:linkedin',
+  mail: 'lucide:mail',
+  'arrow-up-right': 'lucide:arrow-up-right',
+  rss: 'lucide:rss',
+  sliders: 'lucide:sliders-horizontal',
+  list: 'lucide:list',
+  'chevron-down': 'lucide:chevron-down',
+  languages: 'lucide:languages',
+  check: 'lucide:check',
+  monitor: 'lucide:monitor',
+  power: 'lucide:power',
+  contrast: 'lucide:contrast',
+  'layout-default': 'lucide:rectangle-horizontal',
+  'layout-wide': 'lucide:layout-panel-top',
+  'layout-wider': 'lucide:maximize-2',
+  'nav-home': 'lucide:house',
+  'nav-notes': 'lucide:file-text',
+  'nav-now': 'lucide:activity',
+  'nav-uses': 'lucide:wrench',
+  'nav-contact': 'lucide:mail',
+}
+
+interface Props {
+  name: IconName
+  class?: string
+}
+
+const { name, class: className } = Astro.props
+---
+
+<AstroIcon name={ICONS[name]} class={className} />

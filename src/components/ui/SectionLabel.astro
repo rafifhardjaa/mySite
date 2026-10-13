@@ -1,0 +1,20 @@
+---
+interface Props {
+  label: string
+  labelKey?: string
+  as?: 'h1' | 'h2'
+  class?: string
+}
+
+const { label, labelKey, as: Tag = 'h2', class: className = '' } = Astro.props
+---
+
+<div class={`flex items-center gap-4 ${className}`}>
+  <span class="h-px w-10 shrink-0 bg-border" aria-hidden="true"></span>
+  <Tag
+    class="font-mono-jb text-xs font-medium uppercase tracking-[0.35em] text-text-muted"
+    data-i18n={labelKey}
+  >
+    {label}
+  </Tag>
+</div>

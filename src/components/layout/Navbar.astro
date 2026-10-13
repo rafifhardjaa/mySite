@@ -1,0 +1,323 @@
+---
+import ThemeToggle from './ThemeToggle.astro'
+import SettingsMenu from './SettingsMenu.astro'
+import Icon from '@/components/ui/Icon.astro'
+import { NAV_LINKS } from '@/lib/constants'
+import {
+  getLang,
+  useTranslation,
+  localePath,
+  stripLocalePrefix,
+  getLocaleOptions,
+  type LangKey,
+} from '@/i18n/utils'
+
+interface Props {
+  lang: LangKey
+  // null hides the language switch: the current page has no counterpart in the
+  // other locale (a note that is not translated yet).
+  localeSwitchHref?: string | null
+}
+
+const { lang, localeSwitchHref } = Astro.props
+const t = useTranslation(lang)
+const currentPath = Astro.url.pathname
+
+const navIcons = {
+  '/': 'nav-home',
+  '/notes': 'nav-notes',
+  '/now': 'nav-now',
+  '/uses': 'nav-uses',
+  '/contact': 'nav-contact',
+} as const
+
+const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
+
+// Language is a URL, not a client-side preference: both languages are shown, and
+// the current one is marked. `localeSwitchHref === null` means the other language
+// has no page for this route (an untranslated note).
+const localeOptions = getLocaleOptions({
+  lang,
+  localeFree: stripLocalePrefix(currentPath),
+  localeSwitchHref,
+})
+---
+
+<nav
+  id="site-nav"
+  data-nav
+  class="fixed inset-x-0 top-0 z-50 hidden px-0 pt-0 transition-[transform,opacity,padding] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:px-6 data-[floating]:pt-4 md:block"
+>
+  <div
+    class="mx-auto flex layout-container items-center justify-between rounded-none border border-transparent bg-bg px-5 py-2 transition-[border-radius,border-color,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-sm data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+  >
+    <div class="flex items-center gap-5">
+      {
+        NAV_LINKS.map((link) => {
+          const href = localePath(lang, link.href)
+          const active = currentPath === href
+          return (
+            <a
+              href={href}
+              aria-current={active ? 'page' : undefined}
+              class:list={[
+                'text-sm transition-colors',
+                active ? 'font-medium text-text' : 'text-text-muted hover:text-text',
+              ]}
+            >
+              {t(link.key)}
+            </a>
+          )
+        })
+      }
+    </div>
+
+    <div class="flex items-center gap-0.5">
+      <ThemeToggle />
+      <div class="relative">
+        <button
+          type="button"
+          data-settings-toggle
+          aria-label="Settings"
+          title="Settings"
+          aria-expanded="false"
+          aria-controls="settings-menu-desktop"
+          class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
+        >
+          <Icon name="sliders" class="h-[18px] w-[18px] text-text" />
+        </button>
+        <div
+          id="settings-menu-desktop"
+          class="absolute right-0 top-full mt-2 hidden origin-top-right"
+        >
+          <SettingsMenu lang={lang} localeSwitchHref={localeSwitchHref} />
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div
+  data-nav-dock
+  class="fixed inset-x-0 bottom-0 z-50 px-0 pb-0 transition-[transform,opacity,padding] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:px-4 data-[floating]:pb-4 md:hidden"
+>
+  <div
+    class="mx-auto flex max-w-md items-center justify-between rounded-none border border-transparent bg-bg px-3 py-2 transition-[border-radius,border-color,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.2,0,0.2,1)] data-[floating]:rounded-[2rem] data-[floating]:border-border data-[floating]:bg-bg/85 data-[floating]:shadow-lg data-[floating]:shadow-black/5 data-[floating]:backdrop-blur-xl"
+  >
+    <div class="flex items-center gap-0.5">
+      {
+        dockLinks.map((link) => {
+          const href = localePath(lang, link.href)
+          const active = currentPath === href
+          return (
+            <a
+              href={href}
+              aria-label={t(link.key)}
+              aria-current={active ? 'page' : undefined}
+              class:list={[
+                'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+                active
+                  ? 'bg-bg-subtle text-accent'
+                  : 'text-text-muted hover:bg-bg-subtle hover:text-text',
+              ]}
+            >
+              <Icon name={navIcons[link.href as keyof typeof navIcons]} class="h-[18px] w-[18px]" />
+            </a>
+          )
+        })
+      }
+    </div>
+
+    <div class="relative flex items-center gap-0.5">
+      <div
+        class="flex items-center rounded-full border border-border p-0.5"
+        role="group"
+        aria-label={t('settings.language')}
+      >
+        {
+          localeOptions.map((option) => {
+            const base =
+              'flex h-7 min-w-9 items-center justify-center rounded-full px-2 text-xs font-medium transition-colors'
+
+            return option.href ? (
+              <a
+                href={option.href}
+                hreflang={option.code}
+                lang={option.code}
+                aria-label={option.code === 'id' ? 'Bahasa Indonesia' : 'English'}
+                title={option.code === 'id' ? 'Bahasa Indonesia' : 'English'}
+                aria-current={option.active ? 'true' : undefined}
+                class:list={[
+                  base,
+                  option.active
+                    ? 'bg-bg-subtle text-text'
+                    : 'text-text-muted hover:bg-bg-subtle hover:text-text',
+                ]}
+              >
+                {option.code.toUpperCase()}
+              </a>
+            ) : (
+              <span
+                aria-disabled={option.missing ? 'true' : undefined}
+                aria-current={option.active ? 'true' : undefined}
+                title={option.missing ? t('settings.notTranslated') : undefined}
+                class:list={[
+                  base,
+                  option.active ? 'bg-bg-subtle text-text' : 'text-text-muted opacity-40',
+                ]}
+              >
+                {option.code.toUpperCase()}
+              </span>
+            )
+          })
+        }
+      </div>
+      <ThemeToggle />
+      <button
+        type="button"
+        data-settings-toggle
+        aria-label="Settings"
+        title="Settings"
+        aria-expanded="false"
+        aria-controls="settings-menu-mobile"
+        class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
+      >
+        <Icon name="sliders" class="h-[18px] w-[18px] text-text" />
+      </button>
+      <div
+        id="settings-menu-mobile"
+        class="absolute bottom-full right-0 mb-2 hidden origin-bottom-right"
+      >
+        <SettingsMenu lang={lang} localeSwitchHref={localeSwitchHref} />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nav = document.getElementById('site-nav')
+  const mobileDock = document.querySelector<HTMLElement>('[data-nav-dock]')
+
+  const TOP_OFFSET = 64
+  // Asymmetric hysteresis: 20px to hide (scrolling down), 8px to show (scrolling up).
+  // Larger hide threshold prevents flicker from small trackpad bounces; smaller show
+  // threshold makes the nav feel responsive when reversing scroll direction.
+  const HIDE_DELTA = 20
+  const SHOW_DELTA = 8
+  // How long the bar stays detached after the last interaction before it settles
+  // back into the flat, edge-attached style.
+  const IDLE_MS = 3000
+
+  let lastY = window.scrollY
+  let ticking = false
+  let navHidden = false
+  let idleTimer: number | undefined
+
+  // Appearance and visibility are independent. data-floating controls the pill
+  // shape; the -translate-y-full / translate-y-full classes control hiding.
+  //
+  // The attribute has to go on BOTH the wrapper and its inner bar: the padding
+  // variants live on the wrapper while border-radius, shadow and blur live on
+  // the inner one, and a `data-[floating]:` class only matches when the element
+  // carrying it also carries the attribute.
+  function setFloating(floating: boolean) {
+    for (const element of [nav, mobileDock]) {
+      if (!element) continue
+      for (const target of [element, element.firstElementChild]) {
+        if (!(target instanceof HTMLElement)) continue
+        if (floating) target.setAttribute('data-floating', '')
+        else target.removeAttribute('data-floating')
+      }
+    }
+  }
+
+  function markEngaged() {
+    if (window.scrollY <= TOP_OFFSET) return settle()
+    setFloating(true)
+    window.clearTimeout(idleTimer)
+    idleTimer = window.setTimeout(settle, IDLE_MS)
+  }
+
+  function settle() {
+    window.clearTimeout(idleTimer)
+    setFloating(false)
+  }
+
+  function applyVisibility() {
+    const y = window.scrollY
+
+    if (y <= TOP_OFFSET) {
+      nav?.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none')
+      mobileDock?.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none')
+      navHidden = false
+      settle()
+    } else if (y > lastY + HIDE_DELTA) {
+      // The settings panel lives inside the bar being hidden. Leaving it open
+      // would strand aria-expanded="true" and keyboard focus in a hidden menu.
+      closeSettings()
+      nav?.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none')
+      mobileDock?.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none')
+      navHidden = true
+    } else if (y < lastY - SHOW_DELTA) {
+      nav?.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none')
+      mobileDock?.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none')
+      navHidden = false
+    }
+
+    lastY = y
+    markEngaged()
+    ticking = false
+  }
+
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(applyVisibility)
+    },
+    { passive: true }
+  )
+
+  // Any deliberate interaction keeps the bar detached, not just scrolling. The
+  // timer restarts on each one so it settles 3s after the visitor stops.
+  for (const event of ['touchstart', 'pointerdown', 'keydown', 'wheel'] as const) {
+    window.addEventListener(event, markEngaged, { passive: true })
+  }
+
+  markEngaged()
+
+  function closeSettings() {
+    document.querySelectorAll('[data-settings-toggle]').forEach((button) => {
+      button.setAttribute('aria-expanded', 'false')
+      button.removeAttribute('data-open')
+    })
+    document
+      .querySelectorAll('[id^="settings-menu-"]')
+      .forEach((menu) => menu.classList.add('hidden'))
+  }
+
+  document.addEventListener('click', (event) => {
+    const toggle = (event.target as HTMLElement).closest<HTMLElement>('[data-settings-toggle]')
+
+    if (toggle) {
+      const panel = document.getElementById(toggle.getAttribute('aria-controls') ?? '')
+      const willOpen = toggle.getAttribute('aria-expanded') !== 'true'
+
+      closeSettings()
+
+      if (willOpen && panel) {
+        panel.classList.remove('hidden')
+        toggle.setAttribute('aria-expanded', 'true')
+        toggle.setAttribute('data-open', '')
+      }
+      return
+    }
+
+    if (!(event.target as HTMLElement).closest('[id^="settings-menu-"]')) closeSettings()
+  })
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeSettings()
+  })
+</script>

@@ -1,0 +1,74 @@
+---
+import { SITE } from '@/lib/constants'
+import { getLang, localePath, stripLocalePrefix } from '@/i18n/utils'
+import '@/styles/global.css'
+
+interface Props {
+  title: string
+  description?: string
+  // Set when the page has no counterpart in the other locale (an untranslated
+  // note), so no hreflang pair is advertised.
+  hasAlternate?: boolean
+}
+
+const { title, description, hasAlternate = true } = Astro.props
+
+// The locale is part of the URL, so the correct language is known before any
+// client script runs. Nothing about language needs to be stored or swapped.
+const lang = getLang(Astro.currentLocale)
+const origin = Astro.site ?? 'https://yourdomain.com'
+const localeFree = stripLocalePrefix(Astro.url.pathname)
+const canonical = new URL(localePath(lang, localeFree), origin).href
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {
+      hasAlternate && (
+        <>
+          <link
+            rel="alternate"
+            hreflang="en"
+            href={new URL(localePath('en', localeFree), origin).href}
+          />
+          <link
+            rel="alternate"
+            hreflang="id"
+            href={new URL(localePath('id', localeFree), origin).href}
+          />
+          <link rel="alternate" hreflang="x-default" href={new URL(localeFree, origin).href} />
+        </>
+      )
+    }
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${SITE.name} — Notes`}
+      href={localePath(lang, '/notes/rss.xml')}
+    />
+    <script is:inline>
+      const theme =
+        localStorage.getItem('theme') ??
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+
+      const layout = localStorage.getItem('layout') ?? 'default'
+      document.documentElement.setAttribute('data-layout', layout)
+
+      const animation = localStorage.getItem('animation') ?? 'system'
+      if (animation !== 'system') {
+        document.documentElement.setAttribute('data-animation', animation)
+      }
+    </script>
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,215 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { SITE } from '@/lib/constants'
+import { useTranslation, type LangKey } from '@/i18n/utils'
+
+interface Props {
+  lang: LangKey
+}
+
+const { lang } = Astro.props
+const t = useTranslation(lang)
+
+// Public values only. If they are absent the form renders in a disabled state
+// with a clear reason rather than failing silently on submit.
+const endpoint = import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? ''
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''
+const isConfigured = Boolean(endpoint && turnstileSiteKey)
+---
+
+<div
+  class="rounded-xl border border-border bg-bg-subtle/60 p-5 sm:p-6"
+  data-contact-form
+  data-endpoint={endpoint}
+  data-turnstile={turnstileSiteKey}
+  data-msg-required={t('contact.required')}
+  data-msg-bad-email={t('contact.emailInvalid')}
+  data-msg-failed={t('contact.error')}
+  data-msg-success={t('contact.success')}
+  data-msg-unconfigured={t('contact.unconfigured')}
+  data-msg-rate-limited={t('contact.rateLimited')}
+>
+  <form id="contact-form" class="space-y-4" novalidate>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="contact-name" class="mb-1.5 block text-sm text-text-muted">
+          {t('contact.name')}
+        </label>
+        <input
+          id="contact-name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+          maxlength="120"
+          class="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text transition-colors outline-none focus:border-accent"
+        />
+      </div>
+
+      <div>
+        <label for="contact-email" class="mb-1.5 block text-sm text-text-muted">
+          {t('contact.email')}
+        </label>
+        <input
+          id="contact-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          maxlength="200"
+          class="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text transition-colors outline-none focus:border-accent"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label for="contact-message" class="mb-1.5 block text-sm text-text-muted">
+        {t('contact.message')}
+      </label>
+      <textarea
+        id="contact-message"
+        name="message"
+        rows="5"
+        required
+        maxlength="5000"
+        class="w-full resize-y rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text transition-colors outline-none focus:border-accent"
+      ></textarea>
+    </div>
+
+    <div class="hidden" aria-hidden="true">
+      <label for="contact-website">Website</label>
+      <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div id="turnstile-widget" class="min-h-0"></div>
+
+    <button
+      type="submit"
+      disabled={!isConfigured}
+      class="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {t('contact.send')}
+      <Icon name="arrow-up-right" class="h-3.5 w-3.5" />
+    </button>
+
+    <p id="contact-status" class="hidden text-sm" role="status" aria-live="polite"></p>
+
+    <p class="text-xs leading-relaxed text-text-subtle">
+      {t('contact.protected')}
+      <a
+        href={`mailto:${SITE.email}`}
+        class="underline decoration-border underline-offset-2 transition-colors hover:text-accent"
+      >
+        {t('contact.directFallback')}
+        {SITE.email}
+      </a>
+    </p>
+  </form>
+</div>
+
+<script>
+  const form = document.querySelector<HTMLElement>('[data-contact-form]')
+  const element = form?.querySelector<HTMLFormElement>('#contact-form')
+  const status = form?.querySelector<HTMLElement>('#contact-status')
+  const widget = form?.querySelector<HTMLElement>('#turnstile-widget')
+  const submit = element?.querySelector<HTMLButtonElement>('button[type="submit"]')
+  const endpoint = form?.dataset.endpoint ?? ''
+  const siteKey = form?.dataset.turnstile ?? ''
+
+  type MessageKey = 'required' | 'badEmail' | 'failed' | 'success' | 'unconfigured' | 'rateLimited'
+
+  const messageKey: Record<MessageKey, string> = {
+    required: 'msgRequired',
+    badEmail: 'msgBadEmail',
+    failed: 'msgFailed',
+    success: 'msgSuccess',
+    unconfigured: 'msgUnconfigured',
+    rateLimited: 'msgRateLimited',
+  }
+
+  function say(key: MessageKey, tone: 'ok' | 'error'): void {
+    if (!status || !form) return
+
+    status.textContent = form.dataset[messageKey[key]] ?? ''
+    status.classList.remove('hidden', 'text-accent', 'text-red-600', 'dark:text-red-400')
+    status.classList.add(tone === 'ok' ? 'text-accent' : 'text-red-600', 'dark:text-red-400')
+  }
+
+  function liveToken(): string {
+    return (
+      document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value ?? ''
+    )
+  }
+
+  // Turnstile is loaded lazily, only when this page actually renders a form.
+  // The token is read fresh from the widget on every submit — a token captured
+  // on page load can expire while the visitor is still typing.
+  function loadTurnstile(): void {
+    if (!widget || !siteKey) return
+    if (document.querySelector('script[data-turnstile]')) return
+
+    const script = document.createElement('script')
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    script.async = true
+    script.defer = true
+    script.dataset.turnstile = ''
+    script.onload = () => {
+      const turnstile = (
+        window as unknown as { turnstile?: { render: (el: Element, opts: unknown) => void } }
+      ).turnstile
+      turnstile?.render(widget, {
+        sitekey: siteKey,
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      })
+    }
+    document.head.appendChild(script)
+  }
+
+  if (element && widget && siteKey) {
+    widget.style.minHeight = '65px'
+    loadTurnstile()
+  }
+
+  element?.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    if (!endpoint) return say('unconfigured', 'error')
+
+    const data = new FormData(element)
+    const name = String(data.get('name') ?? '').trim()
+    const email = String(data.get('email') ?? '').trim()
+    const message = String(data.get('message') ?? '').trim()
+    const website = String(data.get('website') ?? '')
+
+    if (!name || !email || !message) return say('required', 'error')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say('badEmail', 'error')
+
+    if (submit) {
+      submit.disabled = true
+      submit.dataset.label = submit.textContent ?? ''
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          website,
+          turnstileToken: liveToken(),
+        }),
+      })
+
+      if (response.status === 429) return say('rateLimited', 'error')
+      if (!response.ok) return say('failed', 'error')
+
+      element.reset()
+      say('success', 'ok')
+    } catch {
+      say('failed', 'error')
+    } finally {
+      if (submit) submit.disabled = !siteKey
+    }
+  })
+</script>

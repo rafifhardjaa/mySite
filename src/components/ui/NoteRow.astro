@@ -1,0 +1,39 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { noteHref, formatShortDate, type LangKey } from '@/i18n/utils'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  note: CollectionEntry<'notes'>
+  lang: LangKey
+}
+
+const { note, lang } = Astro.props
+---
+
+<article class="border-b border-border">
+  <a href={noteHref(note, lang)} class="group flex items-baseline gap-3 py-4 sm:gap-4">
+    <time class="w-28 shrink-0 font-mono text-sm whitespace-nowrap text-text-muted">
+      {formatShortDate(note.data.publishedAt, lang)}
+    </time>
+    <span aria-hidden="true" class="text-text-subtle"> — </span>
+    <span class="min-w-0 flex-1">
+      <span class="block font-serif text-xl leading-snug transition-colors group-hover:text-accent">
+        {note.data.title}
+      </span>
+      <span
+        class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 group-focus-within:grid-rows-[1fr] group-hover:grid-rows-[1fr]"
+      >
+        <span class="overflow-hidden">
+          <span class="block pt-1 text-sm leading-relaxed text-text-muted">
+            {note.data.description}
+          </span>
+        </span>
+      </span>
+    </span>
+    <Icon
+      name="arrow-up-right"
+      class="h-4 w-4 shrink-0 -translate-x-1 self-center text-accent opacity-0 transition group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+    />
+  </a>
+</article>
