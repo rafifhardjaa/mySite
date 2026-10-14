@@ -88,6 +88,7 @@
   "now.readingTitle": "Sedang dibaca.",
   "now.rowListening": "Mendengarkan",
   "now.listeningTitle": "Sedang diputar berulang.",
+  "listening.plays": "{n} kali diputar",
   "now.since": "sejak",
   "now.statusPaused": "dijeda",
   "now.statusDone": "selesai",

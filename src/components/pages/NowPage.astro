@@ -72,11 +72,7 @@ const projects = [
       </InfoRow>
 
       <InfoRow label={t('now.rowListening')} title={t('now.listeningTitle')}>
-        <div
-          data-now-live
-          data-label-latest={t('footer.latestPlayed')}
-          data-label-now={t('footer.nowPlaying')}
-        >
+        <div data-now-live data-plays={t('listening.plays', { count: '{n}' })}>
           <NowItemList items={listening} lang={lang} />
         </div>
       </InfoRow>
@@ -93,9 +89,9 @@ const projects = [
 </PageLayout>
 
 <script>
-  // Live listening row: prepends the most recent scrobble above the curated
-  // "on repeat" list, same business logic as the footer teaser (same route,
-  // same labels, same silent fallback). textContent-only writes. Class names
+  // Live top tracks: swaps the curated "on repeat" list for the week's most
+  // played tracks (same silent-fallback contract as the footer teaser — any
+  // failure keeps the curated list). textContent-only writes. Class names
   // below are all already used in the codebase so no new CSS is generated.
   ;(async () => {
     const root = document.querySelector('[data-now-live]')
@@ -105,57 +101,57 @@ const projects = [
 
     let data
     try {
-      const res = await fetch('/api/now-playing')
+      const res = await fetch('/api/top-tracks')
       if (!res.ok) return
       data = await res.json()
     } catch {
       return
     }
-    if (!data?.track) return
+    const tracks = Array.isArray(data?.tracks) ? data.tracks.filter((track) => track?.track) : []
+    if (tracks.length === 0) return
 
-    const row = document.createElement(data.url ? 'a' : 'div')
-    row.className = 'flex items-center gap-3'
-    if (row instanceof HTMLAnchorElement) {
-      row.href = data.url
-      row.target = '_blank'
-      row.rel = 'noopener noreferrer'
+    // Plays template rendered at build ("{n} plays" / "{n} kali diputar").
+    const playsText = (count) => (root.dataset.plays ?? '').replace('{n}', String(count))
+
+    const buildRow = (item) => {
+      const row = document.createElement(item.url ? 'a' : 'div')
+      row.className = 'group flex items-center gap-3'
+      if (row instanceof HTMLAnchorElement) {
+        row.href = item.url
+        row.target = '_blank'
+        row.rel = 'noopener noreferrer'
+      }
+
+      if (item.image) {
+        const img = document.createElement('img')
+        img.src = item.image
+        img.alt = ''
+        img.width = 40
+        img.height = 40
+        img.loading = 'lazy'
+        img.className = 'h-10 w-10 shrink-0 rounded-md border border-border object-cover'
+        row.appendChild(img)
+      }
+
+      const textCol = document.createElement('span')
+      textCol.className = 'flex flex-col'
+      row.appendChild(textCol)
+
+      const trackLine = document.createElement('span')
+      trackLine.className = 'font-medium text-text transition-colors group-hover:text-accent'
+      trackLine.textContent = item.track
+      textCol.appendChild(trackLine)
+
+      const subLine = document.createElement('span')
+      subLine.className = 'text-sm text-text-muted'
+      subLine.textContent = [item.artist, playsText(item.plays)].filter(Boolean).join(' · ')
+      textCol.appendChild(subLine)
+
+      const li = document.createElement('li')
+      li.appendChild(row)
+      return li
     }
 
-    if (data.image) {
-      const img = document.createElement('img')
-      img.src = data.image
-      img.alt = ''
-      img.width = 40
-      img.height = 40
-      img.loading = 'lazy'
-      img.className = 'h-10 w-10 shrink-0 rounded-md border border-border object-cover'
-      row.appendChild(img)
-    }
-
-    const textCol = document.createElement('span')
-    textCol.className = 'flex flex-col'
-    row.appendChild(textCol)
-
-    const trackLine = document.createElement('span')
-    trackLine.className = 'inline-flex items-center gap-1 font-medium text-text'
-    trackLine.textContent = data.track
-    textCol.appendChild(trackLine)
-
-    const badge = document.createElement('span')
-    badge.className =
-      'ml-2 rounded-full border border-border bg-bg-subtle px-2 py-0.5 font-mono text-xs text-accent'
-    badge.textContent = data.nowPlaying ? root.dataset.labelNow : root.dataset.labelLatest
-    trackLine.appendChild(badge)
-
-    if (data.artist) {
-      const artistLine = document.createElement('span')
-      artistLine.className = 'text-sm text-text-muted'
-      artistLine.textContent = data.artist
-      textCol.appendChild(artistLine)
-    }
-
-    const item = document.createElement('li')
-    item.appendChild(row)
-    list.prepend(item)
+    list.replaceChildren(...tracks.map(buildRow))
   })()
 </script>
