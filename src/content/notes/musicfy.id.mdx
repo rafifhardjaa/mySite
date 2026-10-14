@@ -1,0 +1,39 @@
+---
+urlPath: musicfy
+title: "Musicfy"
+description: "Pemutar musik Android gratis dan open-source yang menggantikan YouTube Music dan Spotify di HP saya. Apa itu, dari mana musiknya, dan catatan jujurnya."
+publishedAt: 2026-10-14
+tags: ["android", "musik", "open-source"]
+draft: false
+lang: id
+---
+
+Saya menemukan yang satu ini saat scrolling Threads pagi ini, menginstalnya sebelum makan siang, dan menjelang malam ia sudah menggantikan dua aplikasi di HP saya. Musicfy adalah pemutar musik gratis dan open-source untuk Android — ramping, cepat, dan cukup peduli privasi sampai tagline-nya sendiri menyombongkan diri tidak mengumpulkan datamu.
+
+## Apa ini
+
+Musicfy oleh realidkroo adalah aplikasi Android (8.0 ke atas, terbaik di 13+) berlisensi GPL-3.0, dengan beberapa ratus commit di belakangnya dan komunitas kecil yang hidup. Secara teknis ia adalah fork dari ViviMusic, yang sendirinya dibangun di atas framework Metrolist — open source berdiri di atas open source, sampai ke bawah.
+
+Tidak ada akun, tidak ada tier langganan, tidak ada iklan. Kamu sideload APK dan ia memutar musik. Satu kalimat itu saja sudah menjelaskan sebagian besar daya tariknya.
+
+## Dari mana sebenarnya musiknya
+
+Aplikasi ini tidak meng-host apa-apa — dan terus terang soal itu. Stream datang dari layanan pihak ketiga saat kamu meminta: akses YouTube Music berjalan lewat wrapper InnerTube yang dipinjam dari RiMusic, stream FLAC lossless berutang pada Monochrome, dan lirik tersinkron datang dari LRCLib via provider SimpMusic. Impor Spotify memakai akunmu sendiri.
+
+Arsitektur ini adalah sihir sekaligus kerapuhannya. Tidak ada yang di-host berarti tidak ada yang dibayar, tapi salah satu layanan hulu itu bisa berubah atau merusak segalanya kapan saja. Disclaimer penulisnya bilang persis begitu, dua kali.
+
+## Catatan jujurnya
+
+Ada tiga, semuanya dinyatakan penulisnya, semuanya layak diulang. Pertama: ini masih beta, jadi harapkan bug — melaporkannya membantu. Kedua: ini tidak resmi dan tidak berafiliasi dengan YouTube, Spotify, atau siapa pun; apa yang kamu lakukan dengannya, termasuk ketentuan layanan yang kamu hubungkan dan hukum hak cipta di tempat tinggalmu, adalah tanggung jawabmu. Ketiga: Android 8 sampai 12 bisa jalan tapi mendapat lebih sedikit fitur daripada 13 ke atas.
+
+Juga praktis: ambil APK dari halaman rilis dan pilih arsitektur HP-mu — biasanya arm64. Dan bagikan tautan repositorinya, bukan APK unggahan ulang; penulisnya secara eksplisit meminta itu dan menentang unggahan ulang yang dimonetisasi.
+
+## Vonis
+
+Untuk kebutuhan saya — driver harian yang mulus di Android, menghormati privasi, dan gratis — ia bertahan sejak hari pertama. Perangkat lunak bebas dengan disclaimer jujur mengalahkan aplikasi mulus berhalaman langganan. Hanya saja masuklah dengan tahu ia beta, dan biarkan repo-nya di-star supaya pembaruan menemukanmu.
+
+## Referensi
+
+- [Repositori Musicfy — sumber yang saya baca](https://github.com/realidkroo/musicfy)
+- [Rilis terbaru — pilih arsitekturmu, biasanya arm64](https://github.com/realidkroo/musicfy/releases/latest)
+- [Monochrome — tempat stream FLAC-nya berasal](https://github.com/monochrome-music/monochrome)

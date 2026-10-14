@@ -1,0 +1,38 @@
+---
+title: "Musicfy"
+description: "A free open-source Android music player that replaced YouTube Music and Spotify on my phone. What it is, where the music comes from, and the honest caveats."
+publishedAt: 2026-10-14
+tags: ["android", "music", "open-source"]
+draft: false
+lang: en
+---
+
+I found this one scrolling Threads this morning, installed it before lunch, and by the evening it had replaced two apps on my phone. Musicfy is a free, open-source music player for Android — sleek, fast, and private enough that its own tagline brags about not collecting your data.
+
+## What it is
+
+Musicfy by realidkroo is an Android app (8.0 and up, best on 13+) licensed GPL-3.0, with a few hundred commits behind it and a small but alive community. Technically it is a fork of ViviMusic, which itself builds on the Metrolist framework — open source standing on open source, all the way down.
+
+There is no account, no subscription tier, no ads. You sideload the APK and it plays music. That sentence alone explains most of its appeal.
+
+## Where the music actually comes from
+
+The app hosts nothing — and is upfront about it. Streams come from third-party services when you ask: YouTube Music access runs through the InnerTube wrapper borrowed from RiMusic, lossless FLAC streams credit Monochrome, and synchronized lyrics come from LRCLib via SimpMusic's provider. Spotify imports use your own account.
+
+This architecture is both the magic and the fragility. Nothing to host means nothing to pay for, but any of those upstream services can change or break things at any time. The author's disclaimer says exactly that, twice.
+
+## The honest caveats
+
+Three, all stated by the author, all worth repeating. First: it is still beta, so expect bugs — reporting them helps. Second: it is unofficial and unaffiliated with YouTube, Spotify, or anyone else; what you do with it, including the terms of the services you connect and the copyright law where you live, is your responsibility. Third: Android 8 through 12 works but gets fewer features than 13 and up.
+
+Also practical: grab the APK from the releases page and pick your phone's architecture — normally arm64. And share the repository link, not reuploaded APKs; the author explicitly asks for that and against monetized reuploads.
+
+## Verdict
+
+For my use — a smooth daily driver on Android that respects privacy and costs nothing — it stuck on the first day. Free software with honest disclaimers beats a polished app with a subscription page. Just go in knowing it is beta, and keep the repo starred so updates find you.
+
+## References
+
+- [Musicfy repository — the source I read](https://github.com/realidkroo/musicfy)
+- [Latest release — pick your architecture, normally arm64](https://github.com/realidkroo/musicfy/releases/latest)
+- [Monochrome — where its FLAC streams come from](https://github.com/monochrome-music/monochrome)
