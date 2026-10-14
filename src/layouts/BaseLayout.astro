@@ -84,16 +84,6 @@ const canonical = new URL(localePath(lang, localeFree), origin).href
         document.documentElement.setAttribute('data-animation', animation)
       }
     </script>
-    <!-- Unregister service workers -->
-    <script is:inline>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-    </script>
   </head>
   <body class="flex min-h-dvh flex-col">
     <slot />
