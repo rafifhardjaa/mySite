@@ -1,0 +1,14 @@
+# Freshness contract, version-controlled instead of relying on platform
+# defaults. Worker routes (/api/*) are unaffected — the Worker sets its
+# own headers and this file only applies to static-asset responses.
+#
+# Documents (HTML, markdown twins, feeds, JSON catalogues): always
+# revalidate, so a deploy shows immediately without a hard refresh.
+# Hashed build assets (/_astro/*): fingerprints change per build, so cache
+# them aggressively. Per the Workers docs, _headers rules override (not
+# merge with) the defaults, and the more specific path wins on overlap.
+
+/_astro/*:
+  Cache-Control: public, max-age=31536000, immutable
+/*:
+  Cache-Control: no-cache
