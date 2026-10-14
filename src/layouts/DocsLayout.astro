@@ -28,7 +28,19 @@ const hasToc = headings.filter((heading) => heading.depth === 2 || heading.depth
   localeSwitchHref={localeSwitchHref}
   hasAlternate={hasAlternate}
 >
-  <article data-code-enhance class="mx-auto w-full max-w-6xl px-6 pt-8 pb-16">
+  {
+    /*
+    Width follows the reader's layout setting like every other page. The
+    +20rem is the desktop TOC allowance (16rem column + 4rem gap), so the
+    reading column itself always equals the chosen width instead of the
+    sidebar squeezing it. Below lg there is no sidebar and the plain
+    container applies.
+  */
+  }
+  <article
+    data-code-enhance
+    class="mx-auto w-full layout-container px-6 pt-8 pb-16 lg:max-w-[calc(var(--layout-max)+20rem)]"
+  >
     {
       hasToc && (
         // A native <details> cannot be animated: it snaps between open and closed.

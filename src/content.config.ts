@@ -61,6 +61,10 @@ const nowItems = defineCollection({
     // External destination (book page, Substack, album on Last.fm…).
     // Internal note links use noteSlug so the locale prefix stays correct.
     href: z.string().url().optional(),
+    // Verified store URL for the track (iTunes Store track page, checked by
+    // hand — search misses real tracks, so never guess this). The footer
+    // teaser links here instead of /now when present.
+    storeHref: z.string().url().optional(),
     // Slug of a note under /notes (urlPath form, e.g. "vibe-coding-answer-or-trap").
     noteSlug: z.string().optional(),
     status: z.enum(['active', 'paused', 'done']).default('active'),

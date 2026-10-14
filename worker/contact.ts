@@ -7,6 +7,15 @@
  * same-origin, so there is no cross-site CORS dance — the Origin check below
  * is defense in depth, not the mechanism.
  *
+ * Besides the contact form there are two more API routes:
+ *   GET /api/now-playing — the visitor's latest Last.fm scrobble, so the
+ *   footer teaser stays fresh without a rebuild.
+ *   GET /api/top-tracks  — weekly top tracks for the /now listening section.
+ *   The Last.fm key lives here as a secret and never reaches the browser;
+ *   responses are cached for five minutes (server and browser). Any failure
+ *   keeps the curated fallback: the route answers 502 and the page simply
+ *   doesn't swap.
+ *
  * Contact pipeline (in order, cheapest check first):
  *   1. honeypot field      — free, silent, catches naive bots
  *   2. KV rate limit       — stops bursts before any network call
@@ -28,6 +37,8 @@
  *   Secrets (dashboard → Worker → Settings → Variables, or CLI):
  *     wrangler secret put RESEND_API_KEY
  *     wrangler secret put TURNSTILE_SECRET
+ *     wrangler secret put LASTFM_API_KEY
+ *   Local runs read the same names from .dev.vars (git-ignored).
  *
  * Resend free tier: until a sending domain is verified, FROM must be
  * onboarding@resend.dev and mail only reaches the account owner's inbox.
@@ -45,10 +56,19 @@ interface Env {
   FROM_EMAIL: string
   ALLOWED_ORIGIN: string
   TURNSTILE_SECRET: string
+  LASTFM_API_KEY: string
   RATE_LIMITER: KVNamespace
 }
 
 const API_PATH = '/api/contact'
+const API_NOW_PLAYING = '/api/now-playing'
+const API_TOP_TRACKS = '/api/top-tracks'
+const LASTFM_USER = 'lazyc_'
+const LASTFM_TTL_SECONDS = 300
+const LASTFM_TIMEOUT_MS = 8000
+const TOP_TRACKS_PERIOD = '7day'
+const TOP_TRACKS_LIMIT = 3
+const NO_ARTWORK_HASH = '2a96cbd8b46e442fc41c2b86b821562f'
 
 const MAX_NAME = 120
 const MAX_EMAIL = 200
@@ -59,6 +79,208 @@ const FETCH_TIMEOUT_MS = 8000
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 type Bucket = { count: number; resetAt: number }
+
+type LastFmImage = { '#text': string; size: string }
+
+type LastFmTrack = {
+  name: string
+  artist: { '#text': string }
+  image: LastFmImage[]
+  url: string
+  '@attr'?: { nowplaying?: string }
+}
+
+/**
+ * GETs a read-only Last.fm method. The API key alone suffices — no user auth
+ * involved. Returns parsed JSON, or null on any failure (logged).
+ */
+async function lastfmFetch<T>(method: string, params: string, env: Env): Promise<T | null> {
+  let upstream: Response
+  try {
+    upstream = await fetch(
+      `https://ws.audioscrobbler.com/2.0/?method=${method}&user=${LASTFM_USER}&api_key=${env.LASTFM_API_KEY}&format=json&${params}`,
+      { signal: AbortSignal.timeout(LASTFM_TIMEOUT_MS) }
+    )
+  } catch (err) {
+    console.error(`last.fm ${method} request failed`, err)
+    return null
+  }
+
+  if (!upstream.ok) {
+    console.error(`last.fm ${method} status ${upstream.status}`)
+    return null
+  }
+
+  try {
+    return (await upstream.json()) as T
+  } catch (err) {
+    console.error(`last.fm ${method} body was not JSON`, err)
+    return null
+  }
+}
+
+/** Largest available artwork, extralarge (300px) preferred. */
+function pickImage(images?: LastFmImage[]): string {
+  const url =
+    images?.find((img) => img.size === 'extralarge')?.['#text'] ||
+    images?.[images.length - 1]?.['#text'] ||
+    ''
+  // Last.fm's generic "no artwork" asset: render no cover instead of a grey star.
+  return url.includes(NO_ARTWORK_HASH) ? '' : url
+}
+
+/**
+ * The latest scrobble for the footer teaser. Read-only Last.fm method, so
+ * the API key alone suffices — no user auth involved. Failures (bad key,
+ * empty account, upstream down) answer 502 and the footer keeps its curated
+ * fallback; they must never break the page.
+ */
+async function nowPlaying(env: Env): Promise<Response> {
+  if (!env.LASTFM_API_KEY) {
+    console.error('now-playing worker misconfigured: LASTFM_API_KEY is missing')
+    return json({ error: 'misconfigured' }, 500)
+  }
+
+  const cache = 'caches' in globalThis ? caches.default : null
+  const cacheKey = new Request('https://cache.internal/api/now-playing')
+
+  if (cache) {
+    try {
+      const hit = await cache.match(cacheKey)
+      if (hit) return hit
+    } catch (err) {
+      console.error('now-playing cache read failed', err)
+    }
+  }
+
+  const data = await lastfmFetch<{ recenttracks?: { track?: LastFmTrack[] } }>(
+    'user.getrecenttracks',
+    'limit=1',
+    env
+  )
+  if (!data) return json({ error: 'upstream_failed' }, 502)
+
+  const tracks = data.recenttracks?.track ?? []
+  const latest = Array.isArray(tracks) ? tracks[0] : tracks
+  if (!latest?.name) return json({ error: 'empty' }, 502)
+
+  const response = json(
+    {
+      track: latest.name,
+      artist: latest.artist?.['#text'] ?? '',
+      image: pickImage(latest.image),
+      url: latest.url,
+      nowPlaying: latest['@attr']?.nowplaying === 'true',
+    },
+    200,
+    { 'cache-control': `public, max-age=${LASTFM_TTL_SECONDS}` }
+  )
+
+  if (cache) {
+    try {
+      await cache.put(cacheKey, response.clone())
+    } catch (err) {
+      console.error('now-playing cache write failed', err)
+    }
+  }
+
+  return response
+}
+
+type LastFmTopTrack = {
+  name: string
+  playcount: string
+  // Top-tracks nests the artist as { name } while recent-tracks uses
+  // { "#text" }; accept both so the name never silently goes missing.
+  artist: { name?: string; '#text'?: string }
+  image: LastFmImage[]
+  url: string
+}
+
+/** Album artwork for one top track, or '' when it cannot be resolved. */
+async function enrichTrackArt(track: string, artist: string, env: Env): Promise<string> {
+  try {
+    const url =
+      `https://ws.audioscrobbler.com/2.0/?method=track.getinfo` +
+      `&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}` +
+      `&api_key=${env.LASTFM_API_KEY}&format=json`
+    const res = await fetch(url, { signal: AbortSignal.timeout(LASTFM_TIMEOUT_MS) })
+    if (!res.ok) return ''
+    const data = (await res.json()) as { track?: { album?: { image?: LastFmImage[] } } }
+    return pickImage(data.track?.album?.image)
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Weekly top tracks for the /now listening section. Same contract style as
+ * nowPlaying above: 502 on any failure, and the page keeps its curated
+ * fallback list.
+ */
+async function topTracks(env: Env): Promise<Response> {
+  if (!env.LASTFM_API_KEY) {
+    console.error('top-tracks worker misconfigured: LASTFM_API_KEY is missing')
+    return json({ error: 'misconfigured' }, 500)
+  }
+
+  const cache = 'caches' in globalThis ? caches.default : null
+  const cacheKey = new Request('https://cache.internal/api/top-tracks')
+
+  if (cache) {
+    try {
+      const hit = await cache.match(cacheKey)
+      if (hit) return hit
+    } catch (err) {
+      console.error('top-tracks cache read failed', err)
+    }
+  }
+
+  const data = await lastfmFetch<{ toptracks?: { track?: LastFmTopTrack[] } }>(
+    'user.gettoptracks',
+    `period=${TOP_TRACKS_PERIOD}&limit=${TOP_TRACKS_LIMIT}`,
+    env
+  )
+  if (!data) return json({ error: 'upstream_failed' }, 502)
+
+  const tracks = data.toptracks?.track ?? []
+  const pool = (Array.isArray(tracks) ? tracks : [tracks])
+    .filter((track) => track?.name)
+    .slice(0, TOP_TRACKS_LIMIT)
+
+  if (pool.length === 0) return json({ error: 'empty' }, 502)
+
+  // Artwork in top-tracks responses is often the generic placeholder, so
+  // resolve each cover from the track's album in parallel. One slow lookup
+  // must not fail the rest.
+  const covers = await Promise.all(
+    pool.map((track) =>
+      enrichTrackArt(track.name, track.artist?.name ?? track.artist?.['#text'] ?? '', env)
+    )
+  )
+
+  const list = pool.map((track, index) => ({
+    track: track.name,
+    artist: track.artist?.name ?? track.artist?.['#text'] ?? '',
+    image: covers[index] || pickImage(track.image),
+    url: track.url,
+    plays: Number.parseInt(track.playcount ?? '0', 10) || 0,
+  }))
+
+  const response = json({ tracks: list }, 200, {
+    'cache-control': `public, max-age=${LASTFM_TTL_SECONDS}`,
+  })
+
+  if (cache) {
+    try {
+      await cache.put(cacheKey, response.clone())
+    } catch (err) {
+      console.error('top-tracks cache write failed', err)
+    }
+  }
+
+  return response
+}
 
 function json(body: unknown, status: number, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -107,6 +329,16 @@ function allowedHostnames(env: Env): string[] {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
+
+    if (url.pathname === API_NOW_PLAYING) {
+      if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405)
+      return nowPlaying(env)
+    }
+
+    if (url.pathname === API_TOP_TRACKS) {
+      if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405)
+      return topTracks(env)
+    }
 
     // Anything that is not the contact API is not ours. With [assets]
     // configured, static files never reach this code in the first place.

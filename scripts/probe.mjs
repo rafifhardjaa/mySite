@@ -4,75 +4,19 @@
  * Usage:
  *   node scripts/probe.mjs <url> <width> <height> <theme> <js-to-run> [shotPath]
  */
-import { spawn } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
+import { launchChrome, wait, waitForPage, openCdpSession } from './lib/chrome.mjs'
 
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 const PORT = 9388
 
 const [, , url, width = '420', height = '860', theme = 'dark', action = 'null', shot = ''] =
   process.argv
 
-const chrome = spawn(CHROME, [
-  '--headless=new',
-  '--disable-gpu',
-  '--no-sandbox',
-  `--remote-debugging-port=${PORT}`,
-  '--user-data-dir=/tmp/probe-profile',
-  'about:blank',
-])
+const chrome = launchChrome({ port: PORT, profileDir: '/tmp/probe-profile' })
 
-const wait = (ms) => new Promise((r) => setTimeout(r, ms))
-
-let page
-for (let i = 0; i < 40; i++) {
-  try {
-    const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json()
-    page = list.find((t) => t.type === 'page')
-    if (page) break
-  } catch {}
-  await wait(250)
-}
-
-const ws = new WebSocket(page.webSocketDebuggerUrl)
-let id = 0
-const pending = new Map()
+const page = await waitForPage(PORT)
 const logs = []
-
-ws.addEventListener('message', (event) => {
-  const msg = JSON.parse(event.data)
-  if (msg.method === 'Runtime.exceptionThrown') {
-    logs.push(
-      'EXCEPTION: ' +
-        (msg.params.exceptionDetails.exception?.description ?? msg.params.exceptionDetails.text)
-    )
-  }
-  if (msg.method === 'Runtime.consoleAPICalled') {
-    logs.push('CONSOLE: ' + msg.params.args.map((a) => a.value ?? a.description).join(' '))
-  }
-  if (msg.id && pending.has(msg.id)) {
-    pending.get(msg.id)(msg)
-    pending.delete(msg.id)
-  }
-})
-
-await new Promise((r) => ws.addEventListener('open', r))
-
-const send = (method, params = {}) =>
-  new Promise((resolve) => {
-    const messageId = ++id
-    pending.set(messageId, resolve)
-    ws.send(JSON.stringify({ id: messageId, method, params }))
-  })
-
-const evaluate = async (expression) => {
-  const res = await send('Runtime.evaluate', {
-    expression,
-    returnByValue: true,
-    awaitPromise: true,
-  })
-  return res.result?.result?.value
-}
+const { ws, send, evaluate } = await openCdpSession(page, { captureLogs: logs })
 
 await send('Runtime.enable')
 await send('Page.enable')
@@ -92,15 +36,19 @@ await send('Page.navigate', { url })
 await wait(900)
 
 if (action && action !== 'null') {
-  const result = await evaluate(`Promise.resolve((async () => { ${action} })()).then(
+  const result = await evaluate(
+    `Promise.resolve((async () => { ${action} })()).then(
     (v) => JSON.stringify(v ?? null),
     (e) => 'ACTION ERROR: ' + e.message
-  )`)
+  )`,
+    { awaitPromise: true }
+  )
   await wait(700)
   if (result !== 'null') console.log('ACTION:', result)
 }
 
-const report = await evaluate(`(() => {
+const report = await evaluate(
+  `(() => {
   const cs = (sel, props) => {
     const el = document.querySelector(sel)
     if (!el) return sel + ': MISSING'
@@ -138,7 +86,9 @@ const report = await evaluate(`(() => {
     cs('#settings-menu-mobile', ['display']),
     barState,
   ].join('\\n')
-})()`)
+})()`,
+  { awaitPromise: true }
+)
 
 console.log(`--- ${width}x${height} theme=${theme} ---`)
 console.log(report)

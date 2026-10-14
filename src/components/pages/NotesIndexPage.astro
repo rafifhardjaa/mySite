@@ -2,18 +2,17 @@
 import PageLayout from '@/layouts/PageLayout.astro'
 import NoteRow from '@/components/ui/NoteRow.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
-import { SITE } from '@/lib/constants'
-import { useTranslation, getLang } from '@/i18n/utils'
+import { SITE, PAGE_CONTAINER_CLASS } from '@/lib/constants'
+import { useLocale } from '@/i18n/utils'
 import { getPublishedNotes } from '@/lib/notes'
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 const notes = await getPublishedNotes(lang)
 ---
 
 <PageLayout title={t('notes.heading')} description={SITE.description[lang]}>
-  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+  <div class={PAGE_CONTAINER_CLASS}>
     <SectionLabel label={t('notes.heading')} class="mb-12" />
     {
       notes.length === 0 ? (

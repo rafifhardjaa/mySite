@@ -3,13 +3,13 @@ import { Image } from 'astro:assets'
 import { Code } from 'astro:components'
 import DocsLayout from '@/layouts/DocsLayout.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
+import InfoRow from '@/components/ui/InfoRow.astro'
 import Icon from '@/components/ui/Icon.astro'
 import gallerySetup from '@/assets/gallery-4.jpg'
 import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
-import { useTranslation, getLang, localePath, type LangKey } from '@/i18n/utils'
+import { useLocale, localePath } from '@/i18n/utils'
 
-const lang: LangKey = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 interface Row {
   id: string
@@ -131,23 +131,17 @@ brew install mole gitleaks`
   <div class="divide-y divide-border">
     {
       rows.map((row) => (
-        <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-          <p class="pt-1 font-mono text-sm text-text-muted">{t(row.labelKey)}</p>
-          <div>
-            <h2 id={row.id} class="font-serif text-2xl font-medium scroll-mt-24">
-              {t(row.titleKey)}
-            </h2>
-            <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t(row.bodyKey)}</p>
-            {row.linkKey && row.linkHref && (
-              <div class="mt-4">
-                <a href={row.linkHref} class={INLINE_LINK_CLASS}>
-                  {t(row.linkKey)}
-                  <Icon name="arrow-up-right" class="h-3 w-3" />
-                </a>
-              </div>
-            )}
-          </div>
-        </section>
+        <InfoRow label={t(row.labelKey)} title={t(row.titleKey)} id={row.id}>
+          <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t(row.bodyKey)}</p>
+          {row.linkKey && row.linkHref && (
+            <div class="mt-4">
+              <a href={row.linkHref} class={INLINE_LINK_CLASS}>
+                {t(row.linkKey)}
+                <Icon name="arrow-up-right" class="h-3 w-3" />
+              </a>
+            </div>
+          )}
+        </InfoRow>
       ))
     }
   </div>

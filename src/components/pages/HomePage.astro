@@ -8,12 +8,11 @@ import pfp2 from '@/assets/pfp-2.jpeg'
 import Gallery from '@/components/sections/Gallery.astro'
 import ProjectCard from '@/components/ui/ProjectCard.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
-import { SITE } from '@/lib/constants'
-import { useTranslation, getLang, localePath, noteHref, formatShortDate } from '@/i18n/utils'
+import { SITE, PAGE_CONTAINER_CLASS } from '@/lib/constants'
+import { useLocale, localePath, noteHref, formatShortDate } from '@/i18n/utils'
 import { getPublishedNotes } from '@/lib/notes'
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 const socials = [
   { href: SITE.github, icon: 'github' as const, label: 'GitHub' },
@@ -33,7 +32,7 @@ const totalNotes = allNotes.length
 ---
 
 <PageLayout title={SITE.identity[lang]} description={SITE.description[lang]}>
-  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+  <div class={PAGE_CONTAINER_CLASS}>
     <section class="mb-20 flex flex-col gap-6 sm:flex-row sm:items-start">
       <Pfp src={pfp1} hoverSrc={pfp2} alt={SITE.name} />
 

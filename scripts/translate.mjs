@@ -3,8 +3,8 @@
  * Syncs src/i18n/id.json from src/i18n/en.json.
  *
  * Usage:
- *   pnpm translate            # fill only keys missing from id.json
- *   pnpm translate -- --force # re-translate every key
+ *   npm run translate            # fill only keys missing from id.json
+ *   npm run translate -- --force # re-translate every key
  *
  * Credentials are read from .env.local (git-ignored) via the node --env-file
  * flag wired up in package.json. Never hardcode a key in this file.
@@ -18,10 +18,10 @@
  */
 
 import { readFile, writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
+import { repoRoot, requireEnv, fetchWithRetry } from './lib/util.mjs'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const root = repoRoot(import.meta.url)
 const sourcePath = resolve(root, 'src/i18n/en.json')
 const targetPath = resolve(root, 'src/i18n/id.json')
 
@@ -38,45 +38,12 @@ const SYSTEM_PROMPT = [
   'tanpa pembungkus markdown.',
 ].join(' ')
 
-function requireEnv(name) {
-  const value = process.env[name]
-  if (!value) {
-    console.error(`Missing ${name}. Set it, or choose a different PROVIDER.`)
-    process.exit(1)
-  }
-  return value
-}
-
-const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
-
-/** Retries transient upstream failures. Free-tier models 429/503 under load regularly. */
-async function request(url, options, { attempts = 5, label = 'provider' } = {}) {
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    const response = await fetch(url, options)
-
-    if (response.ok) return response
-
-    const retryable = [429, 500, 502, 503, 504].includes(response.status)
-    const body = await response.text()
-
-    if (!retryable || attempt === attempts) {
-      throw new Error(`${label} ${response.status}: ${body}`)
-    }
-
-    const wait = attempt * 2000
-    console.warn(
-      `  ${label} ${response.status} — retrying in ${wait / 1000}s (${attempt}/${attempts})`
-    )
-    await sleep(wait)
-  }
-}
-
 async function viaGemini(entries) {
   const key = requireEnv('GEMINI_API_KEY')
   const model = process.env.MODEL ?? 'gemini-3.8-flash'
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`
 
-  const response = await request(
+  const response = await fetchWithRetry(
     url,
     {
       method: 'POST',
@@ -101,7 +68,7 @@ async function viaOpenAiCompatible(entries) {
   const base = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1'
   const model = process.env.MODEL ?? 'gpt-4o-mini'
 
-  const response = await request(
+  const response = await fetchWithRetry(
     `${base}/chat/completions`,
     {
       method: 'POST',
@@ -128,7 +95,7 @@ async function viaOpenAiCompatible(entries) {
 
 async function viaGoogle(entries) {
   const key = requireEnv('GOOGLE_API_KEY')
-  const response = await request(
+  const response = await fetchWithRetry(
     `https://translation.googleapis.com/language/translate/v2?key=${key}`,
     {
       method: 'POST',
@@ -156,7 +123,7 @@ async function viaLibreTranslate(entries) {
   const out = {}
 
   for (const [entryKey, value] of entries) {
-    const response = await request(
+    const response = await fetchWithRetry(
       url,
       {
         method: 'POST',

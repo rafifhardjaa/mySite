@@ -1,14 +1,14 @@
 ---
 import PageLayout from '@/layouts/PageLayout.astro'
-import Icon from '@/components/ui/Icon.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
+import InfoRow from '@/components/ui/InfoRow.astro'
+import ExternalLink from '@/components/ui/ExternalLink.astro'
 import NowItemList from '@/components/ui/NowItemList.astro'
-import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
+import { SITE, PAGE_CONTAINER_CLASS } from '@/lib/constants'
 import { getNowItems, getNowLastUpdated } from '@/lib/now-items'
-import { useTranslation, getLang, formatShortDate } from '@/i18n/utils'
+import { useLocale, formatShortDate } from '@/i18n/utils'
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 const learning = await getNowItems('learning')
 const reading = await getNowItems('reading')
@@ -31,24 +31,13 @@ const projects = [
 ---
 
 <PageLayout title={t('now.heading')} description={SITE.description[lang]}>
-  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+  <div class={PAGE_CONTAINER_CLASS}>
     <SectionLabel label={t('now.heading')} as="h1" class="mb-6" />
     <p class="max-w-[70ch] text-lg leading-relaxed text-text-muted">
       {t('now.introA')}{' '}
-      <a href="https://sive.rs" target="_blank" rel="noopener noreferrer" class={INLINE_LINK_CLASS}>
-        Derek Sivers
-        <Icon name="arrow-up-right" class="h-3 w-3" />
-      </a>
+      <ExternalLink href="https://sive.rs">Derek Sivers</ExternalLink>
       {t('now.introB')}{' '}
-      <a
-        href="https://nownownow.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        class={INLINE_LINK_CLASS}
-      >
-        nownownow.com
-        <Icon name="arrow-up-right" class="h-3 w-3" />
-      </a>.
+      <ExternalLink href="https://nownownow.com">nownownow.com</ExternalLink>.
     </p>
     <p class="mt-6 font-mono text-sm text-text-muted">
       <span class="mr-2 inline-block h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
@@ -59,72 +48,110 @@ const projects = [
     <hr class="my-12 border-border" />
 
     <div class="divide-y divide-border">
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowFocus')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.focusTitle')}</h2>
-          <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t('now.focusBody')}</p>
-        </div>
-      </section>
+      <InfoRow label={t('now.rowFocus')} title={t('now.focusTitle')}>
+        <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t('now.focusBody')}</p>
+      </InfoRow>
 
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowBuilding')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.buildingTitle')}</h2>
-          <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t('now.buildingBody')}</p>
-          <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-            {
-              projects.map((project) => (
-                <a
-                  href={project.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class={INLINE_LINK_CLASS}
-                >
-                  {project.name}
-                  <Icon name="arrow-up-right" class="h-3 w-3" />
-                </a>
-              ))
-            }
-          </div>
+      <InfoRow label={t('now.rowBuilding')} title={t('now.buildingTitle')}>
+        <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t('now.buildingBody')}</p>
+        <div class="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+          {
+            projects.map((project) => (
+              <ExternalLink href={project.href}>{project.name}</ExternalLink>
+            ))
+          }
         </div>
-      </section>
+      </InfoRow>
 
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowLearning')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.learningTitle')}</h2>
-          <NowItemList items={learning} lang={lang} />
-        </div>
-      </section>
+      <InfoRow label={t('now.rowLearning')} title={t('now.learningTitle')}>
+        <NowItemList items={learning} lang={lang} />
+      </InfoRow>
 
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowReading')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.readingTitle')}</h2>
-          <NowItemList items={reading} lang={lang} />
-        </div>
-      </section>
+      <InfoRow label={t('now.rowReading')} title={t('now.readingTitle')}>
+        <NowItemList items={reading} lang={lang} />
+      </InfoRow>
 
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowListening')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.listeningTitle')}</h2>
+      <InfoRow label={t('now.rowListening')} title={t('now.listeningTitle')}>
+        <div data-now-live data-plays={t('listening.plays', { count: '{n}' })}>
           <NowItemList items={listening} lang={lang} />
         </div>
-      </section>
+      </InfoRow>
 
-      <section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
-        <p class="pt-1 font-mono text-sm text-text-muted">{t('now.rowOpen')}</p>
-        <div>
-          <h2 class="font-serif text-2xl font-medium">{t('now.openTitle')}</h2>
-          <ul class="mt-4 space-y-2 text-text-muted">
-            {openTo.map((key) => <li>{t(key)}</li>)}
-          </ul>
-        </div>
-      </section>
+      <InfoRow label={t('now.rowOpen')} title={t('now.openTitle')}>
+        <ul class="mt-4 space-y-2 text-text-muted">
+          {openTo.map((key) => <li>{t(key)}</li>)}
+        </ul>
+      </InfoRow>
     </div>
 
     <p class="mt-12 text-sm text-text-muted">{t('now.note')}</p>
   </div>
 </PageLayout>
+
+<script>
+  // Live top tracks: swaps the curated "on repeat" list for the week's most
+  // played tracks (same silent-fallback contract as the footer teaser — any
+  // failure keeps the curated list). textContent-only writes. Class names
+  // below are all already used in the codebase so no new CSS is generated.
+  ;(async () => {
+    const root = document.querySelector('[data-now-live]')
+    if (!root) return
+    const list = root.querySelector('ul')
+    if (!list) return
+
+    let data
+    try {
+      const res = await fetch('/api/top-tracks')
+      if (!res.ok) return
+      data = await res.json()
+    } catch {
+      return
+    }
+    const tracks = Array.isArray(data?.tracks) ? data.tracks.filter((track) => track?.track) : []
+    if (tracks.length === 0) return
+
+    // Plays template rendered at build ("{n} plays" / "{n} kali diputar").
+    const playsText = (count) => (root.dataset.plays ?? '').replace('{n}', String(count))
+
+    const buildRow = (item) => {
+      const row = document.createElement(item.url ? 'a' : 'div')
+      row.className = 'group flex items-center gap-3'
+      if (row instanceof HTMLAnchorElement) {
+        row.href = item.url
+        row.target = '_blank'
+        row.rel = 'noopener noreferrer'
+      }
+
+      if (item.image) {
+        const img = document.createElement('img')
+        img.src = item.image
+        img.alt = ''
+        img.width = 40
+        img.height = 40
+        img.loading = 'lazy'
+        img.className = 'h-10 w-10 shrink-0 rounded-md border border-border object-cover'
+        row.appendChild(img)
+      }
+
+      const textCol = document.createElement('span')
+      textCol.className = 'flex flex-col'
+      row.appendChild(textCol)
+
+      const trackLine = document.createElement('span')
+      trackLine.className = 'font-medium text-text transition-colors group-hover:text-accent'
+      trackLine.textContent = item.track
+      textCol.appendChild(trackLine)
+
+      const subLine = document.createElement('span')
+      subLine.className = 'text-sm text-text-muted'
+      subLine.textContent = [item.artist, playsText(item.plays)].filter(Boolean).join(' · ')
+      textCol.appendChild(subLine)
+
+      const li = document.createElement('li')
+      li.appendChild(row)
+      return li
+    }
+
+    list.replaceChildren(...tracks.map(buildRow))
+  })()
+</script>

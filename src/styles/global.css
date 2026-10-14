@@ -49,20 +49,6 @@
   }
 }
 
-@layer components {
-  .prose :is(h1, h2, h3, h4) {
-    font-family: var(--font-serif);
-  }
-
-  :root[data-lang='en'] .lang-id {
-    display: none;
-  }
-
-  :root[data-lang='id'] .lang-en {
-    display: none;
-  }
-}
-
 .dark {
   --color-bg: #141413;
   --color-bg-subtle: #1c1c1a;
@@ -77,15 +63,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --layout-max: 65ch;
+  /* Container widths in rem, not ch: ch tracks the current font's "0" width,
+     so every webfont swap recomputed the whole page layout (visible reflow
+     on each reload). Values match the old ch widths in Geist (1ch = 10.6px). */
+  --layout-max: 43rem;
 }
 
 :root[data-layout='wide'] {
-  --layout-max: 80ch;
+  --layout-max: 53rem;
 }
 
 :root[data-layout='wider'] {
-  --layout-max: 100ch;
+  --layout-max: 66rem;
 }
 
 @utility layout-container {

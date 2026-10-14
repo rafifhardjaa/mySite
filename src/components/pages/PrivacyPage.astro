@@ -2,10 +2,9 @@
 import DocsLayout from '@/layouts/DocsLayout.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
 import { SITE } from '@/lib/constants'
-import { useTranslation, getLang, formatShortDate } from '@/i18n/utils'
+import { useLocale, formatShortDate } from '@/i18n/utils'
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 interface PrivacySection {
   id: string

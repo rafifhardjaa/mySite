@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/ui/Icon.astro'
+import ExternalLink from '@/components/ui/ExternalLink.astro'
 import { INLINE_LINK_CLASS } from '@/lib/constants'
 import { localePath, useTranslation, type LangKey } from '@/i18n/utils'
 import type { NowItemEntry } from '@/lib/now-items'
@@ -23,15 +24,7 @@ const t = useTranslation(lang)
             <Icon name="arrow-up-right" class="h-3 w-3" />
           </a>
         ) : item.data.href ? (
-          <a
-            href={item.data.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class={INLINE_LINK_CLASS}
-          >
-            {item.data.title[lang]}
-            <Icon name="arrow-up-right" class="h-3 w-3" />
-          </a>
+          <ExternalLink href={item.data.href}>{item.data.title[lang]}</ExternalLink>
         ) : (
           <span class="font-medium text-text">{item.data.title[lang]}</span>
         )}

@@ -1,6 +1,6 @@
 ---
 import DocsLayout from '@/layouts/DocsLayout.astro'
-import { getLang, useTranslation, localePath, formatShortDate } from '@/i18n/utils'
+import { useLocale, localePath, formatShortDate } from '@/i18n/utils'
 import { hasNoteTranslation } from '@/lib/notes'
 
 interface Props {
@@ -14,8 +14,7 @@ interface Props {
 
 const { title, description, publishedAt, updatedAt, notePath, headings = [] } = Astro.props
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 const backHref = localePath(lang, '/notes')
 
 // A translation may not exist yet. Pointing the language switch at the other
