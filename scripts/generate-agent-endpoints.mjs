@@ -281,6 +281,12 @@ const files = walk(DIST).sort()
 
 for (const file of files) {
   const rel = relative(DIST, file).split(sep).join('/')
+
+  // Error pages are not content: no markdown twin, no catalogue entry.
+  // They also break the index.html-per-directory assumption below
+  // (the root one is a bare 404.html file, not a folder).
+  if (/(^|\/)(404|500)(\.html$|\/index\.html$)/.test(rel)) continue
+
   const html = readFileSync(file, 'utf8')
 
   // /notes/foo/index.html -> /notes/foo/

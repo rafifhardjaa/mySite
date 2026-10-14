@@ -9,9 +9,11 @@ interface Props {
   // Set when the page has no counterpart in the other locale (an untranslated
   // note), so no hreflang pair is advertised.
   hasAlternate?: boolean
+  // Error pages: a direct hit answers 200, so opt out of indexing.
+  noindex?: boolean
 }
 
-const { title, description, hasAlternate = true } = Astro.props
+const { title, description, hasAlternate = true, noindex = false } = Astro.props
 
 // The locale is part of the URL, so the correct language is known before any
 // client script runs. Nothing about language needs to be stored or swapped.
@@ -27,6 +29,7 @@ const canonical = new URL(localePath(lang, localeFree), origin).href
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#faf9f5" />
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />

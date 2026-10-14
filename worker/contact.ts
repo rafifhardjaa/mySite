@@ -60,6 +60,9 @@ interface Env {
   TURNSTILE_SECRET: string
   LASTFM_API_KEY: string
   RATE_LIMITER: KVNamespace
+  ASSETS: {
+    fetch(request: Request | string): Promise<Response>
+  }
 }
 
 const API_PATH = '/api/contact'
@@ -344,6 +347,35 @@ function allowedHostnames(env: Env): string[] {
   return hosts
 }
 
+/**
+ * Serve a 404 HTML page matching the request locale. If the path starts with
+ * `/id`, serve the Indonesian 404; otherwise English. Both are built into the
+ * Worker via [assets] in wrangler.toml.
+ */
+async function notFound(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url)
+  const isIndonesian = url.pathname.startsWith('/id')
+  const htmlPath = isIndonesian ? '/id/404/index.html' : '/404.html'
+
+  try {
+    const assetRequest = new Request(new URL(htmlPath, url.origin).href, request)
+    const response = await env.ASSETS.fetch(assetRequest)
+    if (response.status === 200) {
+      return new Response(response.body, {
+        status: 404,
+        headers: { ...response.headers },
+      })
+    }
+  } catch (err) {
+    console.error('404 asset fetch failed', err)
+  }
+
+  return new Response(
+    `<!DOCTYPE html><html lang="${isIndonesian ? 'id' : 'en'}"><body><h1>${isIndonesian ? 'Halaman tidak ditemukan' : 'Page not found'}</h1></body></html>`,
+    { status: 404, headers: { 'content-type': 'text/html; charset=utf-8' } }
+  )
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
@@ -359,9 +391,10 @@ export default {
     }
 
     // Anything that is not the contact API is not ours. With [assets]
-    // configured, static files never reach this code in the first place.
+    // configured, static files are served automatically; only non-existent
+    // paths reach here. Serve a locale-aware 404 page.
     if (url.pathname !== API_PATH) {
-      return json({ error: 'not_found' }, 404)
+      return notFound(request, env)
     }
 
     const base = cors(request, env)
