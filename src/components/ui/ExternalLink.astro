@@ -1,0 +1,19 @@
+---
+import Icon from '@/components/ui/Icon.astro'
+import { INLINE_LINK_CLASS } from '@/lib/constants'
+
+// Outbound link with the house style baked in: underline treatment, new tab,
+// noopener, trailing arrow. `class` fully replaces the default when a surface
+// (footer, project card) uses its own link voice.
+interface Props {
+  href: string
+  class?: string
+}
+
+const { href, class: className } = Astro.props
+---
+
+<a href={href} target="_blank" rel="noopener noreferrer" class={className ?? INLINE_LINK_CLASS}>
+  <slot />
+  <Icon name="arrow-up-right" class="h-3 w-3" />
+</a>

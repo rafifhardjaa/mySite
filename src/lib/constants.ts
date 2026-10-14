@@ -42,3 +42,8 @@ export const NAV_LINKS = [
 // both files and had started to drift.
 export const INLINE_LINK_CLASS =
   'inline-flex items-center gap-1 underline decoration-accent/50 underline-offset-4 transition-colors hover:text-accent'
+
+// The centered page shell used by every PageLayout page that is not a docs
+// page (docs pages size their own article in DocsLayout). Same story as
+// INLINE_LINK_CLASS: one literal in six files, already drifting.
+export const PAGE_CONTAINER_CLASS = 'mx-auto layout-container px-6 pt-8 pb-16'

@@ -50,6 +50,15 @@ export function getLang(currentLocale?: string): LangKey {
 }
 
 /**
+ * The two-line opener of every localised page in one call. `Astro.currentLocale`
+ * goes in, the resolved language and its translator come out.
+ */
+export function useLocale(currentLocale?: string) {
+  const lang = getLang(currentLocale)
+  return { lang, t: useTranslation(lang) }
+}
+
+/**
  * Prefixes a path with the locale when it is not the default one.
  *
  * Anything that is not an internal path (absolute URL, `mailto:`, `tel:`, anchor,

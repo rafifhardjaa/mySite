@@ -49,20 +49,6 @@
   }
 }
 
-@layer components {
-  .prose :is(h1, h2, h3, h4) {
-    font-family: var(--font-serif);
-  }
-
-  :root[data-lang='en'] .lang-id {
-    display: none;
-  }
-
-  :root[data-lang='id'] .lang-en {
-    display: none;
-  }
-}
-
 .dark {
   --color-bg: #141413;
   --color-bg-subtle: #1c1c1a;

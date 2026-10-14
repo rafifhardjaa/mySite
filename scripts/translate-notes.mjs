@@ -3,9 +3,9 @@
  * Translates English notes in src/content/notes/ into Indonesian twins.
  *
  * Usage:
- *   pnpm translate-notes                 # only notes that have no .id.mdx yet
- *   pnpm translate-notes -- --force      # re-translate existing ones
- *   pnpm translate-notes -- battle-of-ain-jalut
+ *   npm run translate-notes                 # only notes that have no .id.mdx yet
+ *   npm run translate-notes -- --force      # re-translate existing ones
+ *   npm run translate-notes -- battle-of-ain-jalut
  *
  * Output: `<name>.id.mdx` with `lang: id` and `urlPath` matching the English
  * note's URL. `urlPath` rather than `slug`, because Astro silently drops a
@@ -23,11 +23,11 @@
 
 import { readFile, writeFile, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, resolve, join } from 'node:path'
+import { join } from 'node:path'
+import { repoRoot, sleep, fetchWithRetry } from './lib/util.mjs'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const notesDir = resolve(root, 'src/content/notes')
+const root = repoRoot(import.meta.url)
+const notesDir = join(root, 'src/content/notes')
 
 const args = process.argv.slice(2)
 const force = args.includes('--force')
@@ -59,42 +59,22 @@ const SYSTEM_PROMPT = [
   '7. Balas HANYA hasil terjemahan, tanpa penjelasan dan tanpa pembungkus markdown.',
 ].join('\n')
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-
-async function request(body) {
-  const maxAttempts = Number(process.env.TRANSLATE_ATTEMPTS ?? 8)
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify(body),
-      }
-    )
-
-    if (res.ok) return res.json()
-
-    if ([429, 500, 502, 503, 504].includes(res.status)) {
-      const wait = Math.min(4000 * 2 ** (attempt - 1), 60000)
-      console.warn(`  ${res.status} — retry ${attempt}/${maxAttempts} in ${wait}ms`)
-      await sleep(wait)
-      continue
-    }
-
-    throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`)
-  }
-
-  throw new Error('Gemini: retries exhausted')
-}
-
 async function translate(text) {
-  const data = await request({
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    contents: [{ role: 'user', parts: [{ text }] }],
-    generationConfig: { temperature: 0.4 },
-  })
+  const maxAttempts = Number(process.env.TRANSLATE_ATTEMPTS ?? 8)
+  const res = await fetchWithRetry(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text }] }],
+        generationConfig: { temperature: 0.4 },
+      }),
+    },
+    { attempts: maxAttempts, label: 'Gemini' }
+  )
+  const data = await res.json()
 
   return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
 }

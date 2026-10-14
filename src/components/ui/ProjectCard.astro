@@ -1,5 +1,5 @@
 ---
-import Icon from '@/components/ui/Icon.astro'
+import ExternalLink from '@/components/ui/ExternalLink.astro'
 import { useTranslation, type LangKey } from '@/i18n/utils'
 import type { CollectionEntry } from 'astro:content'
 
@@ -38,28 +38,22 @@ const { title, role, description, techStack, links } = project.data
   <div class="flex flex-wrap gap-4">
     {
       links.live && (
-        <a
+        <ExternalLink
           href={links.live}
-          target="_blank"
-          rel="noopener noreferrer"
           class="inline-flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent-hover"
         >
           {t('projects.live')}
-          <Icon name="arrow-up-right" class="h-3 w-3" />
-        </a>
+        </ExternalLink>
       )
     }
     {
       links.repo && (
-        <a
+        <ExternalLink
           href={links.repo}
-          target="_blank"
-          rel="noopener noreferrer"
           class="inline-flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent-hover"
         >
           {t('projects.repo')}
-          <Icon name="arrow-up-right" class="h-3 w-3" />
-        </a>
+        </ExternalLink>
       )
     }
   </div>

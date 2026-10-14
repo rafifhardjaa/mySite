@@ -1,0 +1,20 @@
+---
+// The labelled row shared by /now and /uses: monospace gutter on the left,
+// serif title plus free-form body on the right. One component instead of a
+// convention, so the two pages cannot drift apart again.
+interface Props {
+  label: string
+  title: string
+  id?: string
+}
+
+const { label, title, id } = Astro.props
+---
+
+<section class="grid gap-3 py-8 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-8">
+  <p class="pt-1 font-mono text-sm text-text-muted">{label}</p>
+  <div>
+    <h2 id={id} class="scroll-mt-24 font-serif text-2xl font-medium">{title}</h2>
+    <slot />
+  </div>
+</section>

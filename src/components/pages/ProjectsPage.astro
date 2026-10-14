@@ -3,11 +3,10 @@ import { getCollection } from 'astro:content'
 import PageLayout from '@/layouts/PageLayout.astro'
 import ProjectCard from '@/components/ui/ProjectCard.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
-import { SITE } from '@/lib/constants'
-import { useTranslation, getLang } from '@/i18n/utils'
+import { SITE, PAGE_CONTAINER_CLASS } from '@/lib/constants'
+import { useLocale } from '@/i18n/utils'
 
-const lang = getLang(Astro.currentLocale)
-const t = useTranslation(lang)
+const { lang, t } = useLocale(Astro.currentLocale)
 
 const projects = (await getCollection('projects')).sort(
   (a, b) => (a.data.order || 999) - (b.data.order || 999)
@@ -15,7 +14,7 @@ const projects = (await getCollection('projects')).sort(
 ---
 
 <PageLayout title={t('projects.heading')} description={SITE.description[lang]}>
-  <div class="mx-auto layout-container px-6 pt-8 pb-16">
+  <div class={PAGE_CONTAINER_CLASS}>
     <SectionLabel label={t('projects.heading')} class="mb-12" />
     {
       projects.length === 0 ? (

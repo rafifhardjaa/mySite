@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/ui/Icon.astro'
+import ExternalLink from '@/components/ui/ExternalLink.astro'
 import { Image } from 'astro:assets'
 import type { ImageMetadata } from 'astro'
 import coverLemonade from '@/assets/covers/lemonade.jpg'
@@ -135,19 +136,26 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
             </h2>
             <ul class="mt-4 space-y-3">
               {column.links.map((link) => {
-                const href = link.external ? link.href : localePath(lang, link.href)
+                const label = link.labelKey ? t(link.labelKey) : link.label
                 return (
                   <li>
-                    <a
-                      href={href}
-                      {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      {...(link.noPrefetch ? { 'data-astro-prefetch': 'false' } : {})}
-                      class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
-                    >
-                      {link.labelKey ? t(link.labelKey) : link.label}
-                      {link.icon === 'rss' && <Icon name="rss" class="h-3 w-3 text-text-muted" />}
-                      {link.external && <Icon name="arrow-up-right" class="h-3 w-3" />}
-                    </a>
+                    {link.external ? (
+                      <ExternalLink
+                        href={link.href}
+                        class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
+                      >
+                        {label}
+                      </ExternalLink>
+                    ) : (
+                      <a
+                        href={localePath(lang, link.href)}
+                        {...(link.noPrefetch ? { 'data-astro-prefetch': 'false' } : {})}
+                        class="inline-flex items-center gap-1 text-sm text-text transition-colors hover:text-accent"
+                      >
+                        {label}
+                        {link.icon === 'rss' && <Icon name="rss" class="h-3 w-3 text-text-muted" />}
+                      </a>
+                    )}
                   </li>
                 )
               })}

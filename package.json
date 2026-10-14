@@ -13,7 +13,6 @@
     "translate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/translate.mjs",
     "translate-notes": "node --env-file=.env.local scripts/translate-notes.mjs",
     "check:notes": "node scripts/check-notes.mjs",
-    "measure:fcp": "node scripts/measure-fcp.mjs",
     "measure:overflow": "node scripts/measure-overflow.mjs",
     "probe": "node scripts/probe.mjs",
     "agent:endpoints": "node scripts/generate-agent-endpoints.mjs"
