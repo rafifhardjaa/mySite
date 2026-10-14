@@ -1,9 +1,9 @@
 ---
 import { Image } from 'astro:assets'
-import { Code } from 'astro:components'
 import DocsLayout from '@/layouts/DocsLayout.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
 import InfoRow from '@/components/ui/InfoRow.astro'
+import CodeBlock from '@/components/ui/CodeBlock.astro'
 import Icon from '@/components/ui/Icon.astro'
 import gallerySetup from '@/assets/gallery-4.jpg'
 import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
@@ -92,12 +92,8 @@ brew install mole gitleaks`
   <h2 id="setup" class="mt-12 mb-3 font-serif text-xl font-semibold scroll-mt-24">
     {t('uses.setupTitle')}
   </h2>
-  <div data-code-enhance>
-    <Code code={SETUP_DAILY} lang="bash" />
-  </div>
-  <div data-code-enhance>
-    <Code code={SETUP_CLI} lang="bash" />
-  </div>
+  <CodeBlock code={SETUP_DAILY} lang="bash" />
+  <CodeBlock code={SETUP_CLI} lang="bash" />
 
   <script>
     // The hero image sits above the fold with no dimensions of its own. Until

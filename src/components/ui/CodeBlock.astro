@@ -1,0 +1,24 @@
+---
+import { Code } from 'astro:components'
+
+// Bare <Code> renders its default single theme (github-dark) in both modes.
+// Notes get dual palettes from markdown.shikiConfig instead, so this matches
+// them: warm light code, neutral dark code, switching through the same
+// --shiki-dark variables the note layout CSS already flips. Keep the pair in
+// sync with shikiConfig in astro.config.mjs.
+interface Props {
+  code: string
+  lang?: string
+}
+
+const { code, lang = 'bash' } = Astro.props
+---
+
+<div data-code-enhance>
+  <Code
+    code={code}
+    lang={lang}
+    themes={{ light: 'rose-pine-dawn', dark: 'github-dark' }}
+    defaultColor="light"
+  />
+</div>
