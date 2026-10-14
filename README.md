@@ -59,7 +59,8 @@ worker/              # Cloudflare Worker: contact form + Last.fm routes, deploye
 ## Pages
 
 Home, Notes, Projects, Now, Uses, Contact, Resume and Privacy — each with an
-`/id/` counterpart. Notes have an RSS feed at `/notes/rss.xml`, and every route
+`/id/` counterpart. A bilingual 404 page ships at `/404` (`/id/404`, `noindex`),
+and `public/robots.txt` points crawlers at the sitemap. Notes have an RSS feed at `/notes/rss.xml`, and every route
 ships a markdown twin at `<route>/index.md` with frontmatter carrying title,
 description, url and lang. Send `Accept: text/markdown` to get it; see
 `vercel.json`.
@@ -96,10 +97,6 @@ dev` instance at a time (stale instances serve stale worker code)
   defaults to the production domain; override it per environment when needed.
 - The contact form renders disabled until `PUBLIC_CONTACT_ENDPOINT` and
   `PUBLIC_TURNSTILE_SITE_KEY` are set. See `worker/contact.ts` and `wrangler.toml`.
-
-## Roadmap
-
-- Custom 404 and `robots.txt`
 
 ## License
 

@@ -9,13 +9,14 @@ interface Props {
   description?: string
   localeSwitchHref?: string | null
   hasAlternate?: boolean
+  noindex?: boolean
 }
 
-const { title, description, localeSwitchHref, hasAlternate } = Astro.props
+const { title, description, localeSwitchHref, hasAlternate, noindex = false } = Astro.props
 const lang = getLang(Astro.currentLocale)
 ---
 
-<BaseLayout title={title} description={description} hasAlternate={hasAlternate}>
+<BaseLayout title={title} description={description} hasAlternate={hasAlternate} noindex={noindex}>
   <Navbar lang={lang} localeSwitchHref={localeSwitchHref} />
   <main class="flex-1 pt-14 pb-24 md:pb-0">
     <slot />

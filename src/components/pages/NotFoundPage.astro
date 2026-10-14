@@ -1,0 +1,18 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import { INLINE_LINK_CLASS } from '@/lib/constants'
+import { useLocale, localePath } from '@/i18n/utils'
+
+const { lang, t } = useLocale(Astro.currentLocale)
+---
+
+<PageLayout title={t('notFound.title')} description={t('notFound.body')} noindex>
+  <div class="mx-auto layout-container px-6 pt-24 pb-32 text-center">
+    <p class="font-mono-jb text-sm text-text-muted">404</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold">{t('notFound.heading')}</h1>
+    <p class="mx-auto mt-4 max-w-md leading-relaxed text-text-muted">{t('notFound.body')}</p>
+    <p class="mt-8">
+      <a href={localePath(lang, '/')} class={INLINE_LINK_CLASS}>{t('notFound.home')}</a>
+    </p>
+  </div>
+</PageLayout>

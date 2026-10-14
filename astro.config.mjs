@@ -6,7 +6,13 @@ import icon from 'astro-icon'
 
 export default defineConfig({
   site: 'https://rafifhardja.xyz',
-  integrations: [mdx(), sitemap(), icon()],
+  integrations: [
+    mdx(),
+    // The root 404.html is excluded automatically; the localised /id/404/
+    // directory page is not, so error pages are filtered explicitly.
+    sitemap({ filter: (page) => !/\/404\/?$/.test(new URL(page).pathname) }),
+    icon(),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },
