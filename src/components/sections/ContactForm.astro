@@ -11,8 +11,10 @@ const { lang } = Astro.props
 const t = useTranslation(lang)
 
 // Public values only. If they are absent the form renders in a disabled state
-// with a clear reason rather than failing silently on submit.
-const endpoint = import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? ''
+// with a clear reason rather than failing silently on submit. The endpoint is
+// always the same-origin Worker path, so it has a safe default; the Turnstile
+// site key has none and must come from the Cloudflare dashboard.
+const endpoint = import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? '/api/contact'
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''
 const isConfigured = Boolean(endpoint && turnstileSiteKey)
 ---
@@ -102,6 +104,12 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
 
     <p id="contact-status" class="hidden text-sm" role="status" aria-live="polite"></p>
 
+    {
+      !isConfigured && (
+        <p class="text-sm text-red-600 dark:text-red-400">{t('contact.unconfigured')}</p>
+      )
+    }
+
     <p class="text-xs leading-relaxed text-text-subtle">
       {t('contact.protected')}{' '}
       <a
@@ -126,6 +134,24 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   // Both values are build-time public vars. If either is missing the form was
   // rendered disabled, and no submit path may re-enable it.
   const isConfigured = Boolean(endpoint && siteKey)
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+  // Progressive enablement: empty (or invalid) form → disabled button, so the
+  // state always explains itself instead of failing on submit. An unconfigured
+  // form stays disabled no matter what is typed.
+  function isFormValid(): boolean {
+    if (!element) return false
+    const data = new FormData(element)
+    const name = String(data.get('name') ?? '').trim()
+    const email = String(data.get('email') ?? '').trim()
+    const message = String(data.get('message') ?? '').trim()
+    return Boolean(name && message && EMAIL_RE.test(email))
+  }
+
+  function updateSubmitState(): void {
+    if (submit) submit.disabled = !isConfigured || !isFormValid()
+  }
 
   type MessageKey =
     | 'required'
@@ -288,7 +314,7 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     const website = String(data.get('website') ?? '')
 
     if (!name || !email || !message) return say('required', 'error')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say('badEmail', 'error')
+    if (!EMAIL_RE.test(email)) return say('badEmail', 'error')
 
     const token = liveToken()
     if (siteKey && !token) return say('turnstileMissing', 'error')
@@ -335,9 +361,13 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
       say('failed', 'error')
     } finally {
       element.removeAttribute('aria-busy')
-      // Never re-enable a form that was rendered disabled: without an endpoint
-      // or a site key no submit can succeed.
-      if (submit) submit.disabled = !isConfigured
+      // After a success the fields are cleared, so the button locks again;
+      // after a failure the typed values stay, so it stays enabled for retry.
+      // A form rendered disabled (unconfigured) can never unlock here.
+      updateSubmitState()
     }
   })
+
+  element?.addEventListener('input', updateSubmitState)
+  updateSubmitState()
 </script>
