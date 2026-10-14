@@ -93,12 +93,20 @@ const projects = [
   // failure keeps the curated list). textContent-only writes. Class names
   // below are all already used in the codebase so no new CSS is generated.
   ;(async () => {
-    const root = document.querySelector('[data-now-live]')
+    const root = document.querySelector<HTMLElement>('[data-now-live]')
     if (!root) return
     const list = root.querySelector('ul')
     if (!list) return
 
-    let data
+    type TopTrack = {
+      track: string
+      artist?: string
+      image?: string
+      url?: string
+      plays?: number
+    }
+
+    let data: { tracks?: TopTrack[] } | undefined
     try {
       const res = await fetch('/api/top-tracks')
       if (!res.ok) return
@@ -110,12 +118,12 @@ const projects = [
     if (tracks.length === 0) return
 
     // Plays template rendered at build ("{n} plays" / "{n} kali diputar").
-    const playsText = (count) => (root.dataset.plays ?? '').replace('{n}', String(count))
+    const playsText = (count?: number) => (root.dataset.plays ?? '').replace('{n}', String(count))
 
-    const buildRow = (item) => {
+    const buildRow = (item: TopTrack) => {
       const row = document.createElement(item.url ? 'a' : 'div')
       row.className = 'group flex items-center gap-3'
-      if (row instanceof HTMLAnchorElement) {
+      if (row instanceof HTMLAnchorElement && item.url) {
         row.href = item.url
         row.target = '_blank'
         row.rel = 'noopener noreferrer'

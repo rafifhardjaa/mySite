@@ -214,10 +214,12 @@ const hasToc = headings.filter((heading) => heading.depth === 2 || heading.depth
         const body = document.createElement('div')
         body.className = 'note-code-body'
 
-        bar.append(badge, button)
+        bar.appendChild(badge)
+        bar.appendChild(button)
         pre.replaceWith(wrapper)
-        body.append(pre)
-        wrapper.append(bar, body)
+        body.appendChild(pre)
+        wrapper.appendChild(bar)
+        wrapper.appendChild(body)
       }
     })()
   </script>

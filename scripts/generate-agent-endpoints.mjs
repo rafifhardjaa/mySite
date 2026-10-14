@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'n
 import { join, dirname, relative, sep } from 'node:path'
 
 const DIST = join(process.cwd(), 'dist')
-const SITE_ORIGIN = process.env.SITE_ORIGIN ?? 'https://yourdomain.com'
+const SITE_ORIGIN = process.env.SITE_ORIGIN ?? 'https://rafifhardja.xyz'
 
 // ---------------------------------------------------------------- html -> md
 

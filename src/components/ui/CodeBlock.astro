@@ -8,16 +8,21 @@ import { Code } from 'astro:components'
 // sync with shikiConfig in astro.config.mjs.
 interface Props {
   code: string
+  /** Shiki language id (e.g. "bash"); unknown ids fall back to plaintext. */
   lang?: string
 }
 
 const { code, lang = 'bash' } = Astro.props
+
+// `Code` types `lang` as Shiki's language union (not exported publicly);
+// this wrapper accepts any id and lets Shiki fall back to plaintext.
+const codeLang = lang as 'bash'
 ---
 
 <div data-code-enhance>
   <Code
     code={code}
-    lang={lang}
+    lang={codeLang}
     themes={{ light: 'rose-pine-dawn', dark: 'github-dark' }}
     defaultColor="light"
   />

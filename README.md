@@ -22,14 +22,14 @@ npm run preview  # serve the built site
 | `npm run dev`                           | Dev server                                                                |
 | `npm run build`                         | `astro build`, then `agent:endpoints`                                     |
 | `npm run preview`                       | Serve `dist/`                                                             |
-| `npm run format`                        | Prettier over `src/`                                                      |
+| `npm run format`                        | Prettier over `src/`, `worker/`, `scripts/` and the root configs          |
 | `npm run check:notes`                   | Validate Indonesian notes for untranslated fragments                      |
 | `npm run measure:overflow`              | Measure horizontal overflow at given viewport widths                      |
 | `npm run probe`                         | Set viewport and theme, run JS, report computed styles, take a screenshot |
 | `npm run translate` / `translate-notes` | Sync `id.json` and note translations from English                         |
 | `npm run agent:endpoints`               | Regenerate the markdown twins and catalogues from `dist/`                 |
-
-`lint` and `check` are declared but have no config yet — see the roadmap below.
+| `npm run lint` / `npm run check`        | ESLint (flat config) / `astro check` typecheck                            |
+| `npm run assets:og`                     | Regenerate `public/og-image.png` + `apple-touch-icon.png` from the theme  |
 
 ## Structure
 
@@ -93,13 +93,12 @@ dev` instance at a time (stale instances serve stale worker code)
 ## Notes on the build
 
 - `SITE_ORIGIN` env var sets the absolute URLs in the generated files. It
-  defaults to the placeholder domain; set it to the real one before launch.
+  defaults to the production domain; override it per environment when needed.
 - The contact form renders disabled until `PUBLIC_CONTACT_ENDPOINT` and
   `PUBLIC_TURNSTILE_SITE_KEY` are set. See `worker/contact.ts` and `wrangler.toml`.
 
 ## Roadmap
 
-- ESLint flat config + `@astrojs/check` so `lint` and `check` actually run
 - Custom 404 and `robots.txt`
 
 ## License
