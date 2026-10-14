@@ -87,7 +87,9 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
       <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
     </div>
 
-    <div id="turnstile-widget" class="min-h-0"></div>
+    <div data-turnstile-scaler class="origin-top-left">
+      <div id="turnstile-widget" class="min-h-0"></div>
+    </div>
 
     <button
       type="submit"
@@ -189,6 +191,30 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
     }
   }
 
+  // The widget renders at a fixed pixel width and cannot shrink, so on
+  // narrow screens it bleeds past the card. Scale it down to fit and shrink
+  // the wrapper to the scaled height. Everything is measured, never assumed,
+  // so any Cloudflare size works; at full width this is a no-op. Transform
+  // does not change layout boxes, hence the explicit height — and reading
+  // only the parent width while writing only our own height means the
+  // ResizeObserver below cannot feed back into itself.
+  function fitTurnstile(): void {
+    const scaler = form?.querySelector<HTMLElement>('[data-turnstile-scaler]')
+    if (!scaler || !widget) return
+    const content = widget.scrollWidth
+    const available = widget.clientWidth
+    if (!content || available >= content) {
+      scaler.style.transform = ''
+      scaler.style.height = ''
+      scaler.style.overflow = ''
+      return
+    }
+    const scale = available / content
+    scaler.style.transform = `scale(${scale})`
+    scaler.style.height = `${widget.offsetHeight * scale}px`
+    scaler.style.overflow = 'hidden'
+  }
+
   // Turnstile is loaded lazily, only when this page actually renders a form.
   // The token is read fresh from the widget on every submit — a token captured
   // on page load can expire while the visitor is still typing.
@@ -208,6 +234,8 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
         sitekey: siteKey,
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
       })
+      // Rendering changes the widget's measured size from empty to final.
+      fitTurnstile()
     }
     document.head.appendChild(script)
   }
@@ -215,6 +243,13 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   if (element && widget && siteKey) {
     widget.style.minHeight = '65px'
     loadTurnstile()
+    fitTurnstile()
+    // Rotation, viewport and devtools changes all funnel through here.
+    if (typeof ResizeObserver !== 'undefined' && form) {
+      new ResizeObserver(() => fitTurnstile()).observe(form)
+    } else {
+      window.addEventListener('resize', fitTurnstile)
+    }
   }
 
   // Worker error codes get their own message wherever the visitor can tell
