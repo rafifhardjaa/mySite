@@ -24,7 +24,6 @@ npm run preview  # serve the built site
 | `npm run preview`                       | Serve `dist/`                                                             |
 | `npm run format`                        | Prettier over `src/`                                                      |
 | `npm run check:notes`                   | Validate Indonesian notes for untranslated fragments                      |
-| `npm run measure:fcp`                   | Check the language swap happens before first paint                        |
 | `npm run measure:overflow`              | Measure horizontal overflow at given viewport widths                      |
 | `npm run probe`                         | Set viewport and theme, run JS, report computed styles, take a screenshot |
 | `npm run translate` / `translate-notes` | Sync `id.json` and note translations from English                         |
@@ -41,17 +40,20 @@ src/
 │   ├── layout/      # Navbar, Footer, SettingsMenu, ThemeToggle
 │   ├── pages/       # one component per page, shared by both locales
 │   ├── sections/    # ContactForm, Gallery, Pfp
-│   └── ui/          # Icon, NoteRow, ProjectCard, SectionLabel, TableOfContents
+│   └── ui/          # Icon, InfoRow, ExternalLink, NoteRow, NowItemList,
+│                    # ProjectCard, SectionLabel, TableOfContents
 ├── content/
 │   ├── notes/       # MDX notes, `.id.mdx` for the Indonesian twin
+│   ├── now-items/   # JSON entries for the /now Reading/Learning/Listening rows
 │   └── projects/    # JSON project entries
 ├── i18n/            # en.json, id.json, locale helpers
 ├── layouts/         # Base, Page, Note, Docs
-├── lib/             # site constants, note queries, small utilities
+├── lib/             # site constants, notes + now-items queries, small utilities
 ├── pages/           # routes; /id/ mirrors every route
 └── styles/          # global.css, theme tokens, motion preferences
 scripts/             # dev and verification tooling wired into package.json
-worker/              # Cloudflare Worker for the contact form (not deployed yet)
+scripts/lib/         # shared fetch/retry/env (util) and headless-Chrome (chrome) helpers
+worker/              # Cloudflare Worker: contact form + Last.fm routes, deployed
 ```
 
 ## Pages
@@ -69,21 +71,36 @@ they cannot drift from the site:
 - `/.well-known/agent-skills/index.json`
 - `/openapi.json`
 
+## Live music (Last.fm)
+
+The footer teaser and the /now Listening section stay fresh without a
+rebuild. Same-origin Worker routes proxy the read-only Last.fm API so the
+key never reaches the browser:
+
+- `GET /api/now-playing` — latest scrobble (footer)
+- `GET /api/top-tracks` — weekly top 3 (playcounts included)
+
+Both cache for five minutes and answer 502 on any failure, in which case
+the pages silently keep their curated fallback content. Setup:
+
+- `LASTFM_API_KEY` in `.dev.vars` for local runs, `npx wrangler secret put
+LASTFM_API_KEY` + redeploy for production
+- The API routes only exist under `wrangler dev` and in production — under
+  `npm run dev` (Astro only) the fetch 404s and the curated fallback shows
+- Restart the dev server after changing `content.config.ts`; one `wrangler
+dev` instance at a time (stale instances serve stale worker code)
+
 ## Notes on the build
 
 - `SITE_ORIGIN` env var sets the absolute URLs in the generated files. It
   defaults to the placeholder domain; set it to the real one before launch.
 - The contact form renders disabled until `PUBLIC_CONTACT_ENDPOINT` and
   `PUBLIC_TURNSTILE_SITE_KEY` are set. See `worker/contact.ts` and `wrangler.toml`.
-- `SITE.url`, `SITE.linkedin` and `SITE.email` in `src/lib/constants.ts` are
-  still placeholders.
 
 ## Roadmap
 
 - ESLint flat config + `@astrojs/check` so `lint` and `check` actually run
-- Custom 404, `robots.txt`, Open Graph / Twitter card meta
-- Deploy the contact worker (KV, Turnstile and Resend secrets)
-- Point `SITE.url` and `astro.config.mjs` at the real domain
+- Custom 404 and `robots.txt`
 
 ## License
 
