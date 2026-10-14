@@ -94,8 +94,13 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
         href={teaserHref}
         {...teaserExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}}
         class="group flex flex-col text-left sm:items-end sm:text-right"
+        data-now-playing
+        data-label-latest={t('footer.latestPlayed')}
+        data-label-now={t('footer.nowPlaying')}
       >
-        <span class="text-xs text-text-muted">{t('footer.latestPlayed')}</span>
+        <span class="text-xs text-text-muted" data-now-playing-label>
+          {t('footer.latestPlayed')}
+        </span>
         {
           nowSpinning ? (
             <span class="mt-2 flex items-center gap-3">
@@ -107,15 +112,23 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
                   height={40}
                   loading="lazy"
                   decoding="async"
+                  data-now-playing-cover
                   class="h-10 w-10 shrink-0 rounded-md border border-border object-cover"
                 />
               )}
               <span class="ml-3 flex flex-col sm:items-end">
-                <span class="inline-flex items-center gap-1 text-sm text-text transition-colors group-hover:text-accent">
+                <span
+                  class="inline-flex items-center gap-1 text-sm text-text transition-colors group-hover:text-accent"
+                  data-now-playing-track
+                >
                   {track}
                   {teaserExternal && <Icon name="arrow-up-right" class="h-3 w-3" />}
                 </span>
-                {artist && <span class="text-xs text-text-muted">{artist}</span>}
+                {artist && (
+                  <span class="text-xs text-text-muted" data-now-playing-artist>
+                    {artist}
+                  </span>
+                )}
               </span>
             </span>
           ) : (
@@ -166,3 +179,54 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
     </div>
   </div>
 </footer>
+
+<script>
+  // Live "latest played song": swaps the curated teaser for the most recent
+  // scrobble from the same-origin Worker route (the API key never reaches
+  // the browser). textContent-only writes, so track names cannot inject
+  // markup. Anything missing or failed → the curated entry simply stays.
+  ;(async () => {
+    const root = document.querySelector<HTMLAnchorElement>('[data-now-playing]')
+    if (!root) return
+
+    let data
+    try {
+      const res = await fetch('/api/now-playing')
+      if (!res.ok) return
+      data = await res.json()
+    } catch {
+      return
+    }
+    if (!data?.track) return
+
+    const trackEl = root.querySelector('[data-now-playing-track]')
+    const artistEl = root.querySelector('[data-now-playing-artist]')
+    if (
+      trackEl?.textContent?.trim() === data.track &&
+      artistEl?.textContent?.trim() === (data.artist ?? '')
+    ) {
+      return
+    }
+
+    const imgEl = root.querySelector<HTMLImageElement>('[data-now-playing-cover]')
+    if (imgEl && data.image) imgEl.src = data.image
+    if (trackEl) {
+      // The span also holds the arrow icon: replace the text node, not the span.
+      const textNode = Array.from(trackEl.childNodes).find(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== ''
+      )
+      if (textNode) textNode.textContent = data.track
+    }
+    if (artistEl && data.artist) artistEl.textContent = data.artist
+    if (data.url) {
+      root.href = data.url
+      root.target = '_blank'
+      root.rel = 'noopener noreferrer'
+    }
+
+    const labelEl = root.querySelector('[data-now-playing-label]')
+    if (labelEl) {
+      labelEl.textContent = data.nowPlaying ? root.dataset.labelNow : root.dataset.labelLatest
+    }
+  })()
+</script>
