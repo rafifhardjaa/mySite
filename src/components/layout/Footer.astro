@@ -8,11 +8,11 @@ import coverCrazyWorld from '@/assets/covers/crazy-world.jpg'
 import coverFreudian from '@/assets/covers/freudian.jpg'
 import { SITE } from '@/lib/constants'
 import { getNowItems } from '@/lib/now-items'
-import { getLang, useTranslation, localePath, type LangKey } from '@/i18n/utils'
+import { useTranslation, localePath, type LangKey } from '@/i18n/utils'
 
 type FooterLink = {
   href: string
-  label: string
+  label?: string
   labelKey?: string
   external?: boolean
   icon?: 'rss'
@@ -149,7 +149,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
             </h2>
             <ul class="mt-4 space-y-3">
               {column.links.map((link) => {
-                const label = link.labelKey ? t(link.labelKey) : link.label
+                const label = link.labelKey ? t(link.labelKey) : (link.label ?? '')
                 return (
                   <li>
                     {link.external ? (
@@ -189,7 +189,15 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
     const root = document.querySelector<HTMLAnchorElement>('[data-now-playing]')
     if (!root) return
 
-    let data
+    type NowPlaying = {
+      track?: string
+      artist?: string
+      image?: string
+      url?: string
+      nowPlaying?: boolean
+    }
+
+    let data: NowPlaying | undefined
     try {
       const res = await fetch('/api/now-playing')
       if (!res.ok) return
@@ -213,7 +221,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
     if (trackEl) {
       // The span also holds the arrow icon: replace the text node, not the span.
       const textNode = Array.from(trackEl.childNodes).find(
-        (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== ''
+        (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== ''
       )
       if (textNode) textNode.textContent = data.track
     }
@@ -226,7 +234,8 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
 
     const labelEl = root.querySelector('[data-now-playing-label]')
     if (labelEl) {
-      labelEl.textContent = data.nowPlaying ? root.dataset.labelNow : root.dataset.labelLatest
+      labelEl.textContent =
+        (data.nowPlaying ? root.dataset.labelNow : root.dataset.labelLatest) ?? ''
     }
   })()
 </script>

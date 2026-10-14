@@ -1,9 +1,7 @@
 {
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "types": ["astro/client"],
-    "strict": true,
-    "skipLibCheck": true,
-    "jsxImportSource": "astro/jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 /**
  * Cloudflare Worker — serves the portfolio site and its contact endpoint.
  *
@@ -119,6 +121,22 @@ async function lastfmFetch<T>(method: string, params: string, env: Env): Promise
   }
 }
 
+/** Narrow view of the Cloudflare edge cache, without the DOM lib conflict. */
+interface EdgeCache {
+  match(request: Request): Promise<Response | undefined>
+  put(request: Request, response: Response): Promise<void>
+}
+
+/**
+ * `caches.default` exists on Cloudflare but not in the DOM lib types, so it
+ * is read structurally. Null outside the Worker runtime (e.g. `wrangler dev`
+ * without cache, tests) — callers treat a miss as "just fetch upstream".
+ */
+function getEdgeCache(): EdgeCache | null {
+  const stores = globalThis as unknown as { caches?: { default?: EdgeCache } }
+  return stores.caches?.default ?? null
+}
+
 /** Largest available artwork, extralarge (300px) preferred. */
 function pickImage(images?: LastFmImage[]): string {
   const url =
@@ -141,7 +159,7 @@ async function nowPlaying(env: Env): Promise<Response> {
     return json({ error: 'misconfigured' }, 500)
   }
 
-  const cache = 'caches' in globalThis ? caches.default : null
+  const cache = getEdgeCache()
   const cacheKey = new Request('https://cache.internal/api/now-playing')
 
   if (cache) {
@@ -224,7 +242,7 @@ async function topTracks(env: Env): Promise<Response> {
     return json({ error: 'misconfigured' }, 500)
   }
 
-  const cache = 'caches' in globalThis ? caches.default : null
+  const cache = getEdgeCache()
   const cacheKey = new Request('https://cache.internal/api/top-tracks')
 
   if (cache) {
