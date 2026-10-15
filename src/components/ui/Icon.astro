@@ -1,6 +1,13 @@
 ---
 import { Icon as AstroIcon } from 'astro-icon/components'
 
+// NOTE (Oct 2026): astro-icon inlines each icon's <symbol> only on its first
+// occurrence per Astro.locals object, later usages render a bare <use>.
+// During static builds exactly one page — /id/404/ — deterministically
+// reuses a locals object, so all 16 of its icons rendered blank (verified:
+// 16 <use> refs, 0 symbol definitions, every other page intact).
+// Rendering inline removes the shared-state mechanism entirely: every usage
+// carries its own paths, so no page can ever lose its icons again.
 type IconName =
   | 'github'
   | 'linkedin'
@@ -63,4 +70,4 @@ interface Props {
 const { name, class: className } = Astro.props
 ---
 
-<AstroIcon name={ICONS[name]} class={className} />
+<AstroIcon name={ICONS[name]} class={className} is:inline />
