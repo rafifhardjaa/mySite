@@ -1,6 +1,10 @@
 ---
 import { Icon as AstroIcon } from 'astro-icon/components'
 
+// Same rule as Icon.astro: always inline. astro-icon only emits each icon's
+// <symbol> on its first occurrence per Astro.locals object, and during static
+// builds one page already rendered every icon blank because of it.
+
 // Brand glyphs come from Simple Icons (monochrome, so they follow the theme
 // like any other text). Tools without a brand glyph fall back to the text
 // pill rather than a wrong or missing icon.
@@ -50,7 +54,7 @@ const icon = TECH_ICONS[tech]
       title={tech}
       class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-bg-subtle text-text-muted transition-colors hover:text-text"
     >
-      <AstroIcon name={icon} class="h-4 w-4" />
+      <AstroIcon name={icon} class="h-4 w-4" is:inline />
     </span>
   ) : (
     <span class="rounded-full border border-border bg-bg-subtle px-2 py-0.5 text-xs text-text-muted">
