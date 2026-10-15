@@ -5,7 +5,7 @@ import SectionLabel from '@/components/ui/SectionLabel.astro'
 import InfoRow from '@/components/ui/InfoRow.astro'
 import CodeBlock from '@/components/ui/CodeBlock.astro'
 import Icon from '@/components/ui/Icon.astro'
-import gallerySetup from '@/assets/gallery-4.jpg'
+import setupArt from '@/assets/village.jpg'
 import { SITE, INLINE_LINK_CLASS } from '@/lib/constants'
 import { useLocale, localePath } from '@/i18n/utils'
 
@@ -100,8 +100,8 @@ brew install mole gitleaks`
 
   <div class="mt-8 overflow-hidden rounded-2xl border border-border bg-bg-subtle">
     <Image
-      src={gallerySetup}
-      alt={t('home.gallery.photo4')}
+      src={setupArt}
+      alt={t('uses.setupImageAlt')}
       widths={[800, 1200]}
       sizes="(max-width: 640px) 100vw, 800px"
       loading="eager"
