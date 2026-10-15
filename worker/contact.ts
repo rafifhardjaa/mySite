@@ -355,7 +355,11 @@ function allowedHostnames(env: Env): string[] {
 async function notFound(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url)
   const isIndonesian = url.pathname.startsWith('/id')
-  const htmlPath = isIndonesian ? '/id/404/index.html' : '/404.html'
+  // Pretty paths: the bare .html files answer 307 to these, and the ASSETS
+  // fetch below does not follow it — so ask for the canonical URL directly.
+  // Note the asymmetry is real: /404 resolves to 404.html while /id/404/
+  // resolves to id/404/index.html.
+  const htmlPath = isIndonesian ? '/id/404/' : '/404'
 
   try {
     const assetRequest = new Request(new URL(htmlPath, url.origin).href, request)
