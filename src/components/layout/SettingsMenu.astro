@@ -15,9 +15,12 @@ type Option = {
 interface Props {
   lang: LangKey
   localeSwitchHref?: string | null
+  // Mobile is single-column at every width below the layout breakpoints,
+  // so the layout switcher visibly does nothing there — hide it entirely.
+  showLayout?: boolean
 }
 
-const { lang, localeSwitchHref } = Astro.props
+const { lang, localeSwitchHref, showLayout = true } = Astro.props
 const t = useTranslation(lang)
 
 const groups: { key: SettingKey; labelKey: string; options: Option[] }[] = [
@@ -41,59 +44,53 @@ const groups: { key: SettingKey; labelKey: string; options: Option[] }[] = [
   },
 ]
 
+const visibleGroups = groups.filter((group) => showLayout || group.key !== 'layout')
+
 const localeOptions = getLocaleOptions({
   lang,
   localeFree: stripLocalePrefix(Astro.url.pathname),
   localeSwitchHref,
 })
+
+// Language is one action, not a choice to display: a single row jumping to
+// the other locale (or a disabled row when the other locale has no page).
+const otherLocale = localeOptions.find((option) => !option.active)
 ---
 
 <div class="w-56 rounded-xl border border-border bg-bg p-1.5 shadow-lg">
   <div class="px-2 py-1.5 not-last:border-b not-last:border-border">
     <p class="mb-1 px-2 text-xs text-text-muted">{t('settings.language')}</p>
-    <div class="flex items-center gap-1">
-      <Icon name="languages" class="ml-2 h-4 w-4 shrink-0 text-text-muted" />
-      {
-        localeOptions.map((option) => {
-          return option.href ? (
-            <a
-              href={option.href}
-              hreflang={option.code}
-              lang={option.code}
-              aria-current={option.active ? 'true' : undefined}
-              class:list={[
-                'flex flex-1 items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-bg-subtle',
-                option.active ? 'font-medium text-text' : 'text-text-muted hover:text-text',
-              ]}
-            >
-              {option.label}
-              {option.active && <Icon name="check" class="h-4 w-4 text-accent" />}
-            </a>
-          ) : (
-            <span
-              aria-disabled={option.missing ? 'true' : undefined}
-              title={option.missing ? t('settings.notTranslated') : undefined}
-              class:list={[
-                'flex flex-1 items-center justify-between rounded-lg px-2 py-1.5 text-sm',
-                option.active ? 'font-medium text-text' : 'text-text-muted opacity-40',
-              ]}
-            >
-              {option.label}
-              {option.active && <Icon name="check" class="h-4 w-4 text-accent" />}
-            </span>
-          )
-        })
-      }
-    </div>
+    {
+      otherLocale?.href ? (
+        <a
+          href={otherLocale.href}
+          hreflang={otherLocale.code}
+          lang={otherLocale.code}
+          class="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
+        >
+          <Icon name="languages" class="h-4 w-4 shrink-0 text-text-muted" />
+          <span class="flex-1">{otherLocale.label}</span>
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          title={t('settings.notTranslated')}
+          class="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm text-text-muted opacity-40"
+        >
+          <Icon name="languages" class="h-4 w-4 shrink-0 text-text-muted" />
+          <span class="flex-1">{otherLocale?.label ?? t('settings.language')}</span>
+        </span>
+      )
+    }
   </div>
 
   {
-    groups.map((group, index) => (
+    visibleGroups.map((group, index) => (
       <div
         role="radiogroup"
         aria-label={t(group.labelKey)}
         data-group={group.key}
-        class:list={['px-2 py-1.5', index !== groups.length - 1 && 'border-b border-border']}
+        class:list={['px-2 py-1.5', index !== visibleGroups.length - 1 && 'border-b border-border']}
       >
         <p class="mb-1 px-2 text-xs text-text-muted">{t(group.labelKey)}</p>
         {group.options.map((option) => (

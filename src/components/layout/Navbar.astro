@@ -3,13 +3,7 @@ import ThemeToggle from './ThemeToggle.astro'
 import SettingsMenu from './SettingsMenu.astro'
 import Icon from '@/components/ui/Icon.astro'
 import { NAV_LINKS } from '@/lib/constants'
-import {
-  useTranslation,
-  localePath,
-  stripLocalePrefix,
-  getLocaleOptions,
-  type LangKey,
-} from '@/i18n/utils'
+import { useTranslation, localePath, type LangKey } from '@/i18n/utils'
 
 interface Props {
   lang: LangKey
@@ -46,15 +40,6 @@ const navIcons = {
 } as const
 
 const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
-
-// Language is a URL, not a client-side preference: both languages are shown, and
-// the current one is marked. `localeSwitchHref === null` means the other language
-// has no page for this route (an untranslated note).
-const localeOptions = getLocaleOptions({
-  lang,
-  localeFree: stripLocalePrefix(currentPath),
-  localeSwitchHref,
-})
 ---
 
 <nav
@@ -148,49 +133,6 @@ const localeOptions = getLocaleOptions({
     </div>
 
     <div class="relative flex items-center gap-0.5">
-      <div
-        class="flex items-center rounded-full border border-border p-0.5"
-        role="group"
-        aria-label={t('settings.language')}
-      >
-        {
-          localeOptions.map((option) => {
-            const base =
-              'flex h-7 min-w-9 items-center justify-center rounded-full px-2 text-xs font-medium transition-colors'
-
-            return option.href ? (
-              <a
-                href={option.href}
-                hreflang={option.code}
-                lang={option.code}
-                aria-label={option.code === 'id' ? 'Bahasa Indonesia' : 'English'}
-                title={option.code === 'id' ? 'Bahasa Indonesia' : 'English'}
-                aria-current={option.active ? 'true' : undefined}
-                class:list={[
-                  base,
-                  option.active
-                    ? 'bg-bg-subtle text-text'
-                    : 'text-text-muted hover:bg-bg-subtle hover:text-text',
-                ]}
-              >
-                {option.code.toUpperCase()}
-              </a>
-            ) : (
-              <span
-                aria-disabled={option.missing ? 'true' : undefined}
-                aria-current={option.active ? 'true' : undefined}
-                title={option.missing ? t('settings.notTranslated') : undefined}
-                class:list={[
-                  base,
-                  option.active ? 'bg-bg-subtle text-text' : 'text-text-muted opacity-40',
-                ]}
-              >
-                {option.code.toUpperCase()}
-              </span>
-            )
-          })
-        }
-      </div>
       <ThemeToggle />
       <button
         type="button"
@@ -207,7 +149,7 @@ const localeOptions = getLocaleOptions({
         id="settings-menu-mobile"
         class="absolute bottom-full right-0 mb-2 hidden origin-bottom-right"
       >
-        <SettingsMenu lang={lang} localeSwitchHref={localeSwitchHref} />
+        <SettingsMenu lang={lang} localeSwitchHref={localeSwitchHref} showLayout={false} />
       </div>
     </div>
   </div>
