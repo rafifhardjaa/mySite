@@ -27,6 +27,8 @@ export const SITE = {
   github: 'https://github.com/rafifhardjaa',
   repo: 'https://github.com/rafifhardjaa/mySite',
   linkedin: 'https://www.linkedin.com/in/muhammad-abdurrahman-ar-rafif-887b263b3',
+  instagram: 'https://instagram.com/_rraiff',
+  threads: 'https://threads.com/@_rraiff',
   email: 'abdurrahmanarrafif651@email.com',
 } as const
 

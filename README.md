@@ -60,6 +60,7 @@ worker/              # Cloudflare Worker: contact form + Last.fm routes, deploye
 
 Home, Notes, Projects, Now, Uses, Contact, Resume and Privacy — each with an
 `/id/` counterpart. A bilingual 404 page ships at `/404` (`/id/404`, `noindex`),
+a Colophon credits the stack and inspirations at `/colophon`,
 and `public/robots.txt` points crawlers at the sitemap. Notes have an RSS feed at `/notes/rss.xml`, and every route
 ships a markdown twin at `<route>/index.md` with frontmatter carrying title,
 description, url and lang. Send `Accept: text/markdown` to get it; see

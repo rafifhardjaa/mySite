@@ -4,6 +4,8 @@ import { Icon as AstroIcon } from 'astro-icon/components'
 type IconName =
   | 'github'
   | 'linkedin'
+  | 'instagram'
+  | 'threads'
   | 'mail'
   | 'arrow-up-right'
   | 'rss'
@@ -27,6 +29,9 @@ type IconName =
 const ICONS: Record<IconName, string> = {
   github: 'lucide:github',
   linkedin: 'lucide:linkedin',
+  instagram: 'lucide:instagram',
+  // Lucide ships no Threads glyph; the @ mark is Threads' visual identity.
+  threads: 'lucide:at-sign',
   mail: 'lucide:mail',
   'arrow-up-right': 'lucide:arrow-up-right',
   rss: 'lucide:rss',

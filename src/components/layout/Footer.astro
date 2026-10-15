@@ -64,6 +64,7 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
       { href: '/resume', labelKey: 'resume.heading' },
       { href: '/notes/rss.xml', labelKey: 'footer.rss', icon: 'rss', noPrefetch: true },
       { href: '/privacy', labelKey: 'privacy.navLabel' },
+      { href: '/colophon', labelKey: 'colophon.heading' },
       { href: SITE.repo, labelKey: 'footer.source', external: true },
     ],
   },
@@ -72,6 +73,8 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
     links: [
       { href: SITE.github, label: 'GitHub', external: true },
       { href: SITE.linkedin, label: 'LinkedIn', external: true },
+      { href: SITE.instagram, label: 'Instagram', external: true },
+      { href: SITE.threads, label: 'Threads', external: true },
       { href: `mailto:${SITE.email}`, label: 'Email' },
     ],
   },
@@ -81,14 +84,10 @@ const columns: { headingKey: string; links: FooterLink[] }[] = [
 <footer class="mt-20 border-t border-border py-12">
   <div class="mx-auto layout-container px-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
-      <div>
-        <p class="font-mono-jb text-sm text-text">{handle}</p>
-        <p class="mt-1 font-mono-jb text-xs text-text-muted">
-          © {new Date().getFullYear()}
-          {' '}
-          {SITE.name}
-        </p>
-      </div>
+      <p class="font-mono-jb text-xs text-text-muted">
+        {handle}
+        <span aria-hidden="true"> · </span>© {new Date().getFullYear()}
+      </p>
 
       <a
         href={teaserHref}

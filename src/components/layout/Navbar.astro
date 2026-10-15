@@ -62,7 +62,7 @@ const localeOptions = getLocaleOptions({
   class="fixed inset-x-0 top-0 z-50 hidden px-6 pt-4 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:block"
 >
   <div
-    class="mx-auto flex layout-container items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-5 py-2 shadow-sm shadow-black/5 backdrop-blur-xl"
+    class="nav-pill mx-auto flex layout-container items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-5 py-2 shadow-sm shadow-black/5 backdrop-blur-xl"
   >
     <div class="flex items-center gap-5">
       {
@@ -213,6 +213,29 @@ const localeOptions = getLocaleOptions({
   </div>
 </div>
 
+<style>
+  /* Morphing sticky nav: same centered width in both states — only the
+     surface morphs (transparent at the top, condensed floating pill once
+     scrolled past MORPH_OFFSET, see script below). Keeping the width fixed
+     avoids layout shift and keeps the bar aligned with the page content.
+     Reduced-motion and the site's animation toggle already neutralise
+     transitions globally, so no extra guard is needed here. */
+  #site-nav .nav-pill {
+    transition:
+      background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      backdrop-filter 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #site-nav:not([data-scrolled]) .nav-pill {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+</style>
+
 <script>
   const nav = document.getElementById('site-nav')
   const mobileDock = document.querySelector<HTMLElement>('[data-nav-dock]')
@@ -223,12 +246,18 @@ const localeOptions = getLocaleOptions({
   // threshold makes the nav feel responsive when reversing scroll direction.
   const HIDE_DELTA = 20
   const SHOW_DELTA = 8
+  // Morph threshold: deliberately deep (120px) so the hero is enjoyed first.
+  // Below it the nav is transparent full-width; past it, a condensed pill.
+  const MORPH_OFFSET = 120
 
   let lastY = window.scrollY
   let ticking = false
 
   function applyVisibility() {
     const y = window.scrollY
+
+    if (y > MORPH_OFFSET) nav?.setAttribute('data-scrolled', '')
+    else nav?.removeAttribute('data-scrolled')
 
     if (y <= TOP_OFFSET) {
       nav?.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none')
@@ -247,6 +276,10 @@ const localeOptions = getLocaleOptions({
     lastY = y
     ticking = false
   }
+
+  // Paint the correct state on load too: a reloaded page can restore a
+  // scrolled position, and the morph state must match it from the first frame.
+  applyVisibility()
 
   window.addEventListener(
     'scroll',
