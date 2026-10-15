@@ -88,6 +88,13 @@ const routes: Route[] = [
   [data-terminal-output] {
     scrollbar-width: thin;
     scrollbar-color: var(--color-border) transparent;
+    /* The page root is scroll-smooth, which the output inherits: every
+       programmatic scrollTop would then animate and the content visibly
+       slides on each command. Jumping is correct inside a terminal. */
+    scroll-behavior: auto;
+    /* Reserve the scrollbar gutter so appearing/disappearing scrollbars
+       never reflow the line widths. */
+    scrollbar-gutter: stable;
   }
   [data-terminal-output]::-webkit-scrollbar {
     width: 8px;
