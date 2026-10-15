@@ -1,6 +1,26 @@
 # mySite
 
-Personal portfolio. Static site, two languages, no framework runtime.
+Personal portfolio of Abdurrahman Ar Rafif — full-stack web developer.
+Live at [rafifhardja.xyz](https://rafifhardja.xyz).
+
+## About
+
+Static site, two languages (English + Indonesian), no framework runtime. Notes,
+projects, now/uses pages, resume and a contact form backed by a Cloudflare
+Worker; live Last.fm data, RSS and sitemap, a markdown twin and
+machine-readable catalogue for every route, and an in-site terminal console
+that navigates by command.
+
+## Stack
+
+![Astro](https://img.shields.io/badge/Astro-FF5D01?logo=astro&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?logo=cloudflareworkers&logoColor=white)
+![MDX](https://img.shields.io/badge/MDX-FCB32C?logo=mdx&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-5FA04E?logo=nodedotjs&logoColor=white)
+
+Tooling: ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier&logoColor=black)
 
 Built with [Astro](https://astro.build), [Tailwind CSS v4](https://tailwindcss.com)
 and TypeScript. Content lives in collections, translations in flat JSON, and
@@ -39,9 +59,11 @@ src/
 ├── components/
 │   ├── layout/      # Navbar, Footer, SettingsMenu, ThemeToggle
 │   ├── pages/       # one component per page, shared by both locales
+│   │                    # (Home, Contact, Resume, Colophon, …)
 │   ├── sections/    # ContactForm, Gallery, Pfp
-│   └── ui/          # Icon, InfoRow, ExternalLink, NoteRow, NowItemList,
-│                    # ProjectCard, SectionLabel, TableOfContents
+│   └── ui/          # Icon, TechBadge, InfoRow, ExternalLink, NoteRow,
+│                    # NowItemList, ProjectCard, SectionLabel,
+│                    # TableOfContents, TerminalOverlay
 ├── content/
 │   ├── notes/       # MDX notes, `.id.mdx` for the Indonesian twin
 │   ├── now-items/   # JSON entries for the /now Reading/Learning/Listening rows
@@ -53,7 +75,8 @@ src/
 └── styles/          # global.css, theme tokens, motion preferences
 scripts/             # dev and verification tooling wired into package.json
 scripts/lib/         # shared fetch/retry/env (util) and headless-Chrome (chrome) helpers
-worker/              # Cloudflare Worker: contact form + Last.fm routes, deployed
+worker/              # Cloudflare Worker: contact form + Last.fm routes + HTML
+                     # 404 fallback, deployed with wrangler
 ```
 
 ## Pages

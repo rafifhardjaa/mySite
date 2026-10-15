@@ -1,18 +1,40 @@
 ---
 import PageLayout from '@/layouts/PageLayout.astro'
-import { INLINE_LINK_CLASS } from '@/lib/constants'
+import Icon from '@/components/ui/Icon.astro'
 import { useLocale, localePath } from '@/i18n/utils'
 
 const { lang, t } = useLocale(Astro.currentLocale)
+
+const reasons = [t('notFound.reason1'), t('notFound.reason2'), t('notFound.reason3')]
 ---
 
 <PageLayout title={t('notFound.title')} description={t('notFound.body')} noindex>
-  <div class="mx-auto layout-container px-6 pt-24 pb-32 text-center">
-    <p class="font-mono-jb text-sm text-text-muted">404</p>
-    <h1 class="mt-4 font-serif text-4xl font-semibold">{t('notFound.heading')}</h1>
+  <div class="mx-auto layout-container px-6 pt-20 pb-28 text-center sm:pt-24 sm:pb-32">
+    <p aria-hidden="true" class="font-serif text-7xl font-semibold text-text sm:text-8xl">404</p>
+    <h1 class="mt-4 font-serif text-3xl font-semibold sm:text-4xl">{t('notFound.heading')}</h1>
     <p class="mx-auto mt-4 max-w-md leading-relaxed text-text-muted">{t('notFound.body')}</p>
-    <p class="mt-8">
-      <a href={localePath(lang, '/')} class={INLINE_LINK_CLASS}>{t('notFound.home')}</a>
+
+    <ul class="mx-auto mt-8 max-w-md space-y-2 text-left">
+      {
+        reasons.map((reason, index) => (
+          <li class="flex gap-3 text-sm leading-relaxed text-text-muted">
+            <span aria-hidden="true" class="font-mono-jb text-xs text-accent">
+              0{index + 1}
+            </span>
+            <span>{reason}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-10">
+      <a
+        href={localePath(lang, '/')}
+        class="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm text-white transition-opacity hover:opacity-90"
+      >
+        {t('notFound.home')}
+        <Icon name="arrow-up-right" class="h-3.5 w-3.5" />
+      </a>
     </p>
   </div>
 </PageLayout>
