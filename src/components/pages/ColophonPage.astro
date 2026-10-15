@@ -1,0 +1,83 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro'
+import SectionLabel from '@/components/ui/SectionLabel.astro'
+import Icon from '@/components/ui/Icon.astro'
+import { PAGE_CONTAINER_CLASS } from '@/lib/constants'
+import { useLocale } from '@/i18n/utils'
+
+const { t } = useLocale(Astro.currentLocale)
+
+const stack = [
+  { label: t('colophon.rowFramework'), body: t('colophon.rowFrameworkBody') },
+  { label: t('colophon.rowStyling'), body: t('colophon.rowStylingBody') },
+  { label: t('colophon.rowLanguage'), body: t('colophon.rowLanguageBody') },
+  { label: t('colophon.rowBackend'), body: t('colophon.rowBackendBody') },
+  { label: t('colophon.rowContent'), body: t('colophon.rowContentBody') },
+]
+
+// Names and domains are universal — no translation keys needed.
+const people: { name: string; domain: string; href: string }[] = [
+  { name: 'Lee Robinson', domain: 'leerob.io', href: 'https://leerob.io' },
+  { name: 'Dan Abramov', domain: 'overreacted.io', href: 'https://overreacted.io' },
+  { name: 'Guillermo Rauch', domain: 'rauchg.com', href: 'https://rauchg.com' },
+  { name: 'Emil Kowalski', domain: 'emilkowal.ski', href: 'https://emilkowal.ski' },
+  { name: 'Anthony Fu', domain: 'antfu.me', href: 'https://antfu.me' },
+  { name: 'Dominik Dorfmeister', domain: 'tkdodo.eu', href: 'https://tkdodo.eu' },
+  { name: 'Kent C. Dodds', domain: 'kentcdodds.com', href: 'https://kentcdodds.com' },
+  { name: 'Matt Pocock', domain: 'totaltypescript.com', href: 'https://totaltypescript.com' },
+  { name: 'Rizzky', domain: 'rizzky.xyz', href: 'https://rizzky.xyz' },
+  { name: 'Abdul Malik', domain: 'up2dul.dev', href: 'https://up2dul.dev' },
+  { name: 'Rizki Citra', domain: 'rimzzlabs.com', href: 'https://rimzzlabs.com' },
+]
+---
+
+<PageLayout title={t('colophon.heading')} description={t('colophon.intro')}>
+  <div class={PAGE_CONTAINER_CLASS}>
+    <SectionLabel label={t('colophon.heading')} class="mb-12" />
+    <div class="prose prose-neutral max-w-[70ch] dark:prose-invert">
+      <p class="text-lg">{t('colophon.intro')}</p>
+
+      <h2>{t('colophon.stack')}</h2>
+      <dl class="not-prose mt-6 divide-y divide-border border-y border-border">
+        {
+          stack.map((row) => (
+            <div class="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
+              <dt class="font-mono-jb text-xs uppercase tracking-wider text-text-muted sm:pt-1">
+                {row.label}
+              </dt>
+              <dd class="leading-relaxed text-text">{row.body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <h2>{t('colophon.inspiration')}</h2>
+      <p>{t('colophon.inspirationBody')}</p>
+      <ul class="not-prose mt-6 divide-y divide-border border-y border-border">
+        {
+          people.map((person) => (
+            <li>
+              <a
+                href={person.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group flex items-baseline justify-between gap-4 py-4"
+              >
+                <span class="font-serif text-lg text-text transition-colors group-hover:text-accent">
+                  {person.name}
+                </span>
+                <span class="inline-flex shrink-0 items-center gap-1 font-mono-jb text-xs text-text-muted">
+                  {person.domain}
+                  <Icon
+                    name="arrow-up-right"
+                    class="h-3 w-3 transition-colors group-hover:text-accent"
+                  />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</PageLayout>

@@ -1,29 +1,80 @@
 ---
 import PageLayout from '@/layouts/PageLayout.astro'
 import SectionLabel from '@/components/ui/SectionLabel.astro'
-import ExternalLink from '@/components/ui/ExternalLink.astro'
-import { SITE, PAGE_CONTAINER_CLASS } from '@/lib/constants'
-import { useLocale } from '@/i18n/utils'
+import Icon from '@/components/ui/Icon.astro'
+import { PAGE_CONTAINER_CLASS } from '@/lib/constants'
+import { useLocale, localePath } from '@/i18n/utils'
 
 const { lang, t } = useLocale(Astro.currentLocale)
+
+const entries = [
+  { role: t('resume.exp1.role'), org: t('resume.exp1.org'), body: t('resume.exp1.body') },
+  { role: t('resume.exp2.role'), org: t('resume.exp2.org'), body: t('resume.exp2.body') },
+  { role: t('resume.exp3.role'), org: t('resume.exp3.org'), body: t('resume.exp3.body') },
+  { role: t('resume.exp4.role'), org: t('resume.exp4.org'), body: t('resume.exp4.body') },
+  { role: t('resume.exp5.role'), org: t('resume.exp5.org'), body: t('resume.exp5.body') },
+  { role: t('resume.exp6.role'), org: t('resume.exp6.org'), body: t('resume.exp6.body') },
+]
+
+const skillGroups = [
+  { label: t('resume.skillLanguages'), body: t('resume.skillLanguagesBody') },
+  { label: t('resume.skillFrontend'), body: t('resume.skillFrontendBody') },
+  { label: t('resume.skillBackend'), body: t('resume.skillBackendBody') },
+  { label: t('resume.skillInfra'), body: t('resume.skillInfraBody') },
+]
 ---
 
-<PageLayout title={t('resume.heading')} description={SITE.description[lang]}>
+<PageLayout title={t('resume.heading')} description={t('resume.profileBody')}>
   <div class={PAGE_CONTAINER_CLASS}>
     <SectionLabel label={t('resume.heading')} class="mb-12" />
     <div class="prose prose-neutral max-w-[70ch] dark:prose-invert">
-      <p class="text-lg">
-        {t('resume.download')}{' '}
-        <ExternalLink href="/resume.pdf" class="text-accent hover:text-accent-hover">
-          PDF
-        </ExternalLink>
-      </p>
+      <p class="text-xl font-medium leading-snug text-text">{t('resume.tagline')}</p>
+
+      <h2>{t('resume.profile')}</h2>
+      <p>{t('resume.profileBody')}</p>
+
       <h2>{t('resume.experience')}</h2>
-      <p>{t('resume.experiencePlaceholder')}</p>
+      <div class="not-prose mt-6 divide-y divide-border border-y border-border">
+        {
+          entries.map((entry) => (
+            <div class="py-5">
+              <h3 class="font-serif text-lg font-semibold text-text">{entry.role}</h3>
+              <p class="mt-1 font-mono-jb text-xs uppercase tracking-wider text-text-muted">
+                {entry.org}
+              </p>
+              <p class="mt-2 leading-relaxed text-text-muted">{entry.body}</p>
+            </div>
+          ))
+        }
+      </div>
+
       <h2>{t('resume.skills')}</h2>
-      <p>{t('resume.skillsPlaceholder')}</p>
+      <dl class="not-prose mt-6 divide-y divide-border border-y border-border">
+        {
+          skillGroups.map((group) => (
+            <div class="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[12rem_1fr] sm:gap-6">
+              <dt class="font-mono-jb text-xs uppercase tracking-wider text-text-muted sm:pt-1">
+                {group.label}
+              </dt>
+              <dd class="leading-relaxed text-text">{group.body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
       <h2>{t('resume.education')}</h2>
-      <p>{t('resume.educationPlaceholder')}</p>
+      <p>{t('resume.educationBody')}</p>
+
+      <div class="not-prose mt-12 rounded-xl border border-border bg-bg-subtle/60 p-6">
+        <p class="leading-relaxed text-text">{t('resume.cta')}</p>
+        <a
+          href={localePath(lang, '/contact')}
+          class="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm text-white transition-opacity hover:opacity-90"
+        >
+          {t('resume.ctaButton')}
+          <Icon name="arrow-up-right" class="h-3.5 w-3.5" />
+        </a>
+      </div>
     </div>
   </div>
 </PageLayout>

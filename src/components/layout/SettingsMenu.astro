@@ -114,6 +114,16 @@ const localeOptions = getLocaleOptions({
       </div>
     ))
   }
+  <div class="px-2 py-1.5">
+    <button
+      type="button"
+      data-open-terminal
+      class="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
+    >
+      <Icon name="terminal" class="h-4 w-4 shrink-0 text-text-muted" />
+      <span class="flex-1">{t('settings.terminal')}</span>
+    </button>
+  </div>
 </div>
 
 <script>

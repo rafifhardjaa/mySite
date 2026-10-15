@@ -4,7 +4,7 @@
 @import '@fontsource/jetbrains-mono/latin-400.css';
 @import '@fontsource/jetbrains-mono/latin-400-italic.css';
 @import '@fontsource/jetbrains-mono/latin-500.css';
-@import '@fontsource-variable/source-serif-4';
+@import '@fontsource-variable/newsreader';
 @plugin '@tailwindcss/typography';
 
 /* Vertical rhythm scale. Keep new spacing on this scale so every page reads
@@ -22,7 +22,7 @@
   --font-sans: 'Geist Variable', system-ui, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, monospace;
   --font-mono-jb: 'JetBrains Mono', ui-monospace, monospace;
-  --font-serif: 'Source Serif 4 Variable', Georgia, serif;
+  --font-serif: 'Newsreader Variable', Georgia, serif;
 }
 
 @layer base {

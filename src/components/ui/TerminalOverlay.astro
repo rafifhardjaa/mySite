@@ -1,0 +1,318 @@
+---
+import { SITE, NAV_LINKS } from '@/lib/constants'
+import { useLocale, localePath } from '@/i18n/utils'
+
+const { lang, t } = useLocale(Astro.currentLocale)
+
+type Route = { name: string; href: string }
+
+// Route names are the universal slugs; only UI strings are translated.
+const routes: Route[] = [
+  ...NAV_LINKS.map((link) => ({
+    name: link.href === '/' ? 'home' : link.href.replace(/^\//, ''),
+    href: localePath(lang, link.href),
+  })),
+  { name: 'resume', href: localePath(lang, '/resume') },
+  { name: 'projects', href: localePath(lang, '/projects') },
+  { name: 'privacy', href: localePath(lang, '/privacy') },
+  { name: 'colophon', href: localePath(lang, '/colophon') },
+]
+---
+
+<div
+  data-terminal
+  role="dialog"
+  aria-modal="true"
+  aria-label={t('terminal.label')}
+  class="fixed inset-0 z-[70] hidden bg-black/40 px-4 pt-24 pb-10"
+  data-routes={JSON.stringify(routes)}
+  data-github={SITE.github}
+  data-linkedin={SITE.linkedin}
+  data-instagram={SITE.instagram}
+  data-threads={SITE.threads}
+  data-email={SITE.email}
+  data-whoami={SITE.bio[lang]}
+  data-msg-welcome={t('terminal.welcome')}
+  data-msg-help={t('terminal.help')}
+  data-msg-unknown={t('terminal.unknown')}
+  data-msg-open-usage={t('terminal.openUsage')}
+  data-msg-no-page={t('terminal.noPage')}
+  data-msg-opening={t('terminal.opening')}
+  data-msg-theme-usage={t('terminal.themeUsage')}
+  data-msg-theme-set={t('terminal.themeSet')}
+  data-msg-lang-usage={t('terminal.langUsage')}
+  data-msg-lang-set={t('terminal.langSet')}
+>
+  <div
+    class="mx-auto w-full max-w-xl overflow-hidden rounded-xl border border-border bg-bg shadow-2xl"
+  >
+    <div
+      data-terminal-output
+      aria-live="polite"
+      class="h-72 space-y-1 overflow-y-auto p-4 font-mono-jb text-sm leading-relaxed whitespace-pre-wrap"
+    >
+    </div>
+    <form
+      data-terminal-form
+      autocomplete="off"
+      class="flex items-center gap-2 border-t border-border px-4 py-3"
+    >
+      <span aria-hidden="true" class="shrink-0 font-mono-jb text-sm text-accent"
+        >visitor@rafifhardja:~$</span
+      >
+      <input
+        data-terminal-input
+        type="text"
+        aria-label={t('terminal.label')}
+        autocapitalize="off"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck={false}
+        class="w-full bg-transparent font-mono-jb text-sm text-text outline-none"
+      />
+    </form>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-terminal]')
+  const output = root?.querySelector<HTMLElement>('[data-terminal-output]')
+  const form = root?.querySelector<HTMLFormElement>('[data-terminal-form]')
+  const input = root?.querySelector<HTMLInputElement>('[data-terminal-input]')
+
+  type Route = { name: string; href: string }
+
+  function readRoutes(): Route[] {
+    try {
+      const parsed: unknown = JSON.parse(root?.dataset.routes ?? '[]')
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter(
+        (entry): entry is Route =>
+          typeof entry === 'object' &&
+          entry !== null &&
+          typeof (entry as Route).name === 'string' &&
+          typeof (entry as Route).href === 'string'
+      )
+    } catch {
+      return []
+    }
+  }
+
+  const routes = readRoutes()
+
+  function msg(key: string): string {
+    return root?.dataset[key] ?? ''
+  }
+
+  function fill(template: string, vars: Record<string, string>): string {
+    return template.replace(/\{(\w+)\}/g, (match, name: string) => vars[name] ?? match)
+  }
+
+  function print(text: string, tone: 'text' | 'error' = 'text'): void {
+    if (!output) return
+    const line = document.createElement('div')
+    line.textContent = text
+    if (tone === 'error') line.classList.add('text-red-600', 'dark:text-red-400')
+    else line.classList.add('text-text')
+    output.appendChild(line)
+    while (output.childElementCount > 200) output.firstElementChild?.remove()
+    output.scrollTop = output.scrollHeight
+  }
+
+  function echo(command: string): void {
+    if (!output) return
+    const line = document.createElement('div')
+    const prompt = document.createElement('span')
+    prompt.textContent = 'visitor@rafifhardja:~$ '
+    prompt.className = 'text-accent'
+    const rest = document.createElement('span')
+    rest.textContent = command
+    rest.className = 'text-text-muted'
+    line.appendChild(prompt)
+    line.appendChild(rest)
+    output.appendChild(line)
+    output.scrollTop = output.scrollHeight
+  }
+
+  let lastFocus: HTMLElement | null = null
+  let welcomed = false
+
+  function isOpen(): boolean {
+    return root !== null && !root.classList.contains('hidden')
+  }
+
+  // The settings panel lives wherever the toggle was pressed. Opening the
+  // terminal takes over, so close menus the same way the navbar does.
+  function closeSettings(): void {
+    document.querySelectorAll('[data-settings-toggle]').forEach((button) => {
+      button.setAttribute('aria-expanded', 'false')
+      button.removeAttribute('data-open')
+    })
+    document
+      .querySelectorAll('[id^="settings-menu-"]')
+      .forEach((menu) => menu.classList.add('hidden'))
+  }
+
+  function open(): void {
+    if (!root || !input || isOpen()) return
+    lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    closeSettings()
+    root.classList.remove('hidden')
+    if (!welcomed) {
+      welcomed = true
+      print(msg('msgWelcome'))
+    }
+    input.value = ''
+    input.focus()
+  }
+
+  function close(): void {
+    if (!root || !isOpen()) return
+    root.classList.add('hidden')
+    if (lastFocus) lastFocus.focus()
+  }
+
+  // Mirrors the theme toggle: explicit choice persists, system follows the OS.
+  function setTheme(mode: string): boolean {
+    if (mode === 'dark' || mode === 'light') {
+      document.documentElement.classList.toggle('dark', mode === 'dark')
+      localStorage.setItem('theme', mode)
+      return true
+    }
+    if (mode === 'system') {
+      localStorage.removeItem('theme')
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.classList.toggle('dark', dark)
+      return true
+    }
+    return false
+  }
+
+  function currentTheme(): string {
+    const stored = localStorage.getItem('theme')
+    if (stored) return stored
+    return `system (${window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'})`
+  }
+
+  function switchLanguage(code: string): boolean {
+    if (code !== 'en' && code !== 'id') return false
+    const bare = location.pathname.replace(/^\/id(?=\/|$)/, '') || '/'
+    location.href = code === 'id' ? (bare === '/' ? '/id/' : `/id${bare}`) : bare
+    return true
+  }
+
+  function run(raw: string): void {
+    const argv = raw.trim().split(/\s+/).filter(Boolean)
+    if (argv.length === 0) return
+    echo(raw.trim())
+
+    const [command, ...args] = argv as [string, ...string[]]
+    switch (command.toLowerCase()) {
+      case 'help':
+        for (const line of msg('msgHelp').split('\n')) print(line)
+        break
+      case 'ls': {
+        print(routes.map((route) => route.name).join('  '))
+        break
+      }
+      case 'open': {
+        const name = (args[0] ?? '').toLowerCase()
+        if (!name) {
+          print(msg('msgOpenUsage'), 'error')
+          break
+        }
+        const route = routes.find((entry) => entry.name === name)
+        if (!route) {
+          print(fill(msg('msgNoPage'), { name }), 'error')
+          break
+        }
+        print(fill(msg('msgOpening'), { name: route.name }))
+        location.href = route.href
+        break
+      }
+      case 'theme': {
+        const mode = (args[0] ?? '').toLowerCase()
+        if (!mode) {
+          print(fill(msg('msgThemeSet'), { v: currentTheme() }))
+          break
+        }
+        if (!setTheme(mode)) print(msg('msgThemeUsage'), 'error')
+        else print(fill(msg('msgThemeSet'), { v: mode }))
+        break
+      }
+      case 'lang': {
+        const code = (args[0] ?? '').toLowerCase()
+        if (code !== 'en' && code !== 'id') {
+          print(msg('msgLangUsage'), 'error')
+          break
+        }
+        print(msg('msgLangSet'))
+        switchLanguage(code)
+        break
+      }
+      case 'whoami':
+        print(msg('whoami'))
+        break
+      case 'social':
+        for (const [label, key] of [
+          ['GitHub', 'github'],
+          ['LinkedIn', 'linkedin'],
+          ['Instagram', 'instagram'],
+          ['Threads', 'threads'],
+        ] as const) {
+          print(`${label}: ${root?.dataset[key] ?? ''}`)
+        }
+        break
+      case 'email':
+        print(root?.dataset.email ?? '')
+        break
+      case 'clear':
+        output?.replaceChildren()
+        break
+      case 'exit':
+        close()
+        break
+      default:
+        print(fill(msg('msgUnknown'), { cmd: command }), 'error')
+    }
+  }
+
+  if (root && form && input && !document.documentElement.dataset.terminalReady) {
+    document.documentElement.dataset.terminalReady = 'true'
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      run(input.value)
+      input.value = ''
+      input.focus()
+    })
+
+    root.addEventListener('click', (event) => {
+      if (event.target === root) close()
+      else input.focus()
+    })
+
+    document.addEventListener('click', (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-open-terminal]')
+      if (trigger) open()
+    })
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isOpen()) {
+        close()
+        return
+      }
+      const target = event.target as HTMLElement | null
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable === true
+      if (event.key === '`' && !event.ctrlKey && !event.metaKey && !event.altKey && !typing) {
+        event.preventDefault()
+        if (isOpen()) close()
+        else open()
+      }
+    })
+  }
+</script>
