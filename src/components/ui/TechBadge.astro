@@ -1,0 +1,60 @@
+---
+import { Icon as AstroIcon } from 'astro-icon/components'
+
+// Brand glyphs come from Simple Icons (monochrome, so they follow the theme
+// like any other text). Tools without a brand glyph fall back to the text
+// pill rather than a wrong or missing icon.
+const TECH_ICONS: Record<string, string> = {
+  TypeScript: 'simple-icons:typescript',
+  React: 'simple-icons:react',
+  Vite: 'simple-icons:vite',
+  'Tailwind CSS': 'simple-icons:tailwindcss',
+  'Node.js': 'simple-icons:nodedotjs',
+  Express: 'simple-icons:express',
+  SQLite: 'simple-icons:sqlite',
+  PostgreSQL: 'simple-icons:postgresql',
+  Supabase: 'simple-icons:supabase',
+  Docker: 'simple-icons:docker',
+  Astro: 'simple-icons:astro',
+  Python: 'simple-icons:python',
+  pytest: 'simple-icons:pytest',
+  'GitHub Actions': 'simple-icons:githubactions',
+  Unity3D: 'simple-icons:unity',
+  Vercel: 'simple-icons:vercel',
+  GSAP: 'simple-icons:gsap',
+  'React Router': 'simple-icons:reactrouter',
+  'Cloudflare Workers': 'simple-icons:cloudflare',
+  HTML5: 'simple-icons:html5',
+  'VS Code': 'simple-icons:visualstudiocode',
+  Bruno: 'simple-icons:bruno',
+  Postman: 'simple-icons:postman',
+  DBeaver: 'simple-icons:dbeaver',
+  Obsidian: 'simple-icons:obsidian',
+  GitKraken: 'simple-icons:gitkraken',
+  'OpenVPN Connect': 'simple-icons:openvpn',
+}
+
+interface Props {
+  tech: string
+}
+
+const { tech } = Astro.props
+const icon = TECH_ICONS[tech]
+---
+
+{
+  icon ? (
+    <span
+      role="img"
+      aria-label={tech}
+      title={tech}
+      class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-bg-subtle text-text-muted transition-colors hover:text-text"
+    >
+      <AstroIcon name={icon} class="h-4 w-4" />
+    </span>
+  ) : (
+    <span class="rounded-full border border-border bg-bg-subtle px-2 py-0.5 text-xs text-text-muted">
+      {tech}
+    </span>
+  )
+}

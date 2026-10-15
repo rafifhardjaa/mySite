@@ -24,7 +24,7 @@ const routes: Route[] = [
   role="dialog"
   aria-modal="true"
   aria-label={t('terminal.label')}
-  class="fixed inset-0 z-[70] hidden bg-black/40 px-4 pt-24 pb-10"
+  class="fixed inset-0 z-[70] hidden bg-black/40 px-4 pt-24 pb-10 backdrop-blur-[2px]"
   data-routes={JSON.stringify(routes)}
   data-github={SITE.github}
   data-linkedin={SITE.linkedin}
@@ -44,12 +44,20 @@ const routes: Route[] = [
   data-msg-lang-set={t('terminal.langSet')}
 >
   <div
-    class="mx-auto w-full max-w-xl overflow-hidden rounded-xl border border-border bg-bg shadow-2xl"
+    class="mx-auto w-full max-w-xl overflow-hidden rounded-xl border border-border bg-bg shadow-2xl transition-colors focus-within:border-accent/60"
   >
+    <div class="flex items-center gap-2 border-b border-border bg-bg-subtle/60 px-4 py-2.5">
+      <span class="flex gap-1.5" aria-hidden="true">
+        <span class="h-2.5 w-2.5 rounded-full bg-text-subtle/30"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-text-subtle/30"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-text-subtle/30"></span>
+      </span>
+      <span class="ml-1 font-mono-jb text-xs text-text-muted">{t('terminal.label')}</span>
+    </div>
     <div
       data-terminal-output
       aria-live="polite"
-      class="h-72 space-y-1 overflow-y-auto p-4 font-mono-jb text-sm leading-relaxed whitespace-pre-wrap"
+      class="h-72 max-h-[60vh] space-y-1 overflow-y-auto p-4 font-mono-jb text-sm leading-relaxed whitespace-pre-wrap"
     >
     </div>
     <form
@@ -68,11 +76,26 @@ const routes: Route[] = [
         autocomplete="off"
         autocorrect="off"
         spellcheck={false}
-        class="w-full bg-transparent font-mono-jb text-sm text-text outline-none"
+        class="w-full bg-transparent font-mono-jb text-sm text-text caret-accent outline-none"
       />
     </form>
   </div>
 </div>
+
+<style>
+  /* Thin scrollback scrollbar in the site palette, both color schemes. */
+  [data-terminal-output] {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  [data-terminal-output]::-webkit-scrollbar {
+    width: 8px;
+  }
+  [data-terminal-output]::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 8px;
+  }
+</style>
 
 <script>
   const root = document.querySelector<HTMLElement>('[data-terminal]')

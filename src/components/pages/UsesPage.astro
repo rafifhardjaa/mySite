@@ -18,12 +18,31 @@ interface Row {
   bodyKey: string
   linkKey?: string
   linkHref?: string
+  icons?: string[]
 }
 
 const rows: Row[] = [
-  { id: 'code', labelKey: 'uses.rowCode', titleKey: 'uses.codeTitle', bodyKey: 'uses.codeBody' },
-  { id: 'api', labelKey: 'uses.rowApi', titleKey: 'uses.apiTitle', bodyKey: 'uses.apiBody' },
-  { id: 'data', labelKey: 'uses.rowData', titleKey: 'uses.dataTitle', bodyKey: 'uses.dataBody' },
+  {
+    id: 'code',
+    labelKey: 'uses.rowCode',
+    titleKey: 'uses.codeTitle',
+    bodyKey: 'uses.codeBody',
+    icons: ['VS Code', 'Herd'],
+  },
+  {
+    id: 'api',
+    labelKey: 'uses.rowApi',
+    titleKey: 'uses.apiTitle',
+    bodyKey: 'uses.apiBody',
+    icons: ['Bruno', 'Postman'],
+  },
+  {
+    id: 'data',
+    labelKey: 'uses.rowData',
+    titleKey: 'uses.dataTitle',
+    bodyKey: 'uses.dataBody',
+    icons: ['DBeaver', 'OrbStack'],
+  },
   {
     id: 'git',
     labelKey: 'uses.rowGit',
@@ -31,24 +50,28 @@ const rows: Row[] = [
     bodyKey: 'uses.gitBody',
     linkKey: 'uses.gitLink',
     linkHref: localePath(lang, '/notes/gitleaks-before-push'),
+    icons: ['GitKraken'],
   },
   {
     id: 'network',
     labelKey: 'uses.rowNetwork',
     titleKey: 'uses.networkTitle',
     bodyKey: 'uses.networkBody',
+    icons: ['OpenVPN Connect'],
   },
   {
     id: 'notes',
     labelKey: 'uses.rowNotes',
     titleKey: 'uses.notesTitle',
     bodyKey: 'uses.notesBody',
+    icons: ['Obsidian'],
   },
   {
     id: 'daily',
     labelKey: 'uses.rowDaily',
     titleKey: 'uses.dailyTitle',
     bodyKey: 'uses.dailyBody',
+    icons: ['Orca', 'Cubby'],
   },
 ]
 
@@ -127,7 +150,7 @@ brew install mole gitleaks`
   <div class="divide-y divide-border">
     {
       rows.map((row) => (
-        <InfoRow label={t(row.labelKey)} title={t(row.titleKey)} id={row.id}>
+        <InfoRow label={t(row.labelKey)} title={t(row.titleKey)} id={row.id} icons={row.icons}>
           <p class="mt-3 max-w-[70ch] leading-relaxed text-text-muted">{t(row.bodyKey)}</p>
           {row.linkKey && row.linkHref && (
             <div class="mt-4">
