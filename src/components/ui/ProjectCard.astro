@@ -1,5 +1,6 @@
 ---
 import ExternalLink from '@/components/ui/ExternalLink.astro'
+import TechBadge from '@/components/ui/TechBadge.astro'
 import { useTranslation, type LangKey } from '@/i18n/utils'
 import type { CollectionEntry } from 'astro:content'
 
@@ -25,14 +26,8 @@ const { title, role, description, techStack, links } = project.data
 
   <p class="mb-4 text-text-muted">{description[lang]}</p>
 
-  <div class="mb-3 flex flex-wrap gap-1.5">
-    {
-      techStack.map((tech) => (
-        <span class="rounded-full border border-border bg-bg-subtle px-2 py-0.5 text-xs text-text-muted">
-          {tech}
-        </span>
-      ))
-    }
+  <div class="mb-3 flex flex-wrap items-center gap-1.5">
+    {techStack.map((tech) => <TechBadge tech={tech} />)}
   </div>
 
   <div class="flex flex-wrap gap-4">
