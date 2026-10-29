@@ -4,16 +4,12 @@
     "en": "A browser game portal with a large library of free HTML5 and Unity/WebGL titles across action, puzzle, racing and casual categories. I maintain the site and its day-to-day operation, including the security side: bot and scraper filtering with honeypot fields and request validation, so automated abuse stays off the platform.",
     "id": "Portal game browser dengan koleksi besar judul gratis berbasis HTML5 dan Unity/WebGL, dari kategori aksi, puzzle, balapan, sampai kasual. Saya mengelola situs ini beserta operasionalnya sehari-hari, termasuk sisi keamanannya: penyaringan bot dan scraper lewat honeypot serta validasi permintaan, supaya penyalahgunaan otomatis tidak masuk ke platform."
   },
-  "role": "Maintainer",
+  "role": ["Maintainer"],
   "status": "active",
   "featured": true,
-  "techStack": [
-    "Unity3D",
-    "WebGL",
-    "HTML5"
-  ],
+  "techStack": ["Unity3D", "WebGL", "HTML5"],
   "links": {
     "live": "https://rudgames.com/"
   },
-  "order": 3
+  "order": 4
 }
