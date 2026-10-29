@@ -4,19 +4,12 @@
     "en": "A command-line scam detector for Indonesian-language messages. Paste a WhatsApp or SMS text or a URL and get a 0-100 risk score with readable reasons — phishing, fake APK links, OTP requests and brand-lookalike domains. Pure heuristics with no runtime dependencies, and it never opens a link.",
     "id": "Pendektor penipuan berbasis baris perintah untuk pesan berbahasa Indonesia. Tempel teks WhatsApp atau SMS, atau sebuah URL, lalu dapatkan skor risiko 0-100 beserta alasan yang mudah dibaca: phishing, APK palsu, permintaan OTP, dan domain yang menyamar sebagai merek ternama. Murni heuristik tanpa dependensi runtime, dan tidak pernah membuka tautan."
   },
-  "role": "Contributor",
+  "role": ["Contributor"],
   "status": "active",
   "featured": true,
-  "techStack": [
-    "Python",
-    "CLI",
-    "Regex",
-    "pytest",
-    "Ruff",
-    "GitHub Actions"
-  ],
+  "techStack": ["Python", "CLI", "Regex", "pytest", "Ruff", "GitHub Actions"],
   "links": {
     "repo": "https://github.com/patrickivanuellf/scamlens-id"
   },
-  "order": 2
+  "order": 3
 }

@@ -1,0 +1,24 @@
+{
+  "title": "SiManis LMS",
+  "description": {
+    "en": "A full-stack learning management system for SMK Mataram: student and teacher rosters, subjects, modules, lessons, discussions, and counseling. The REST API runs on Bun and Elysia with Drizzle ORM over PostgreSQL, while the Next.js 15 web app gives admins, teachers, and students their own role-gated dashboards.",
+    "id": "Sistem manajemen pembelajaran full-stack untuk SMK Mataram: data siswa dan guru, mata pelajaran, modul, materi, diskusi, sampai bimbingan konseling. REST API berjalan di Bun dan Elysia dengan Drizzle ORM di atas PostgreSQL, sementara aplikasi web Next.js 15 menyediakan dasbor terpisah untuk admin, guru, dan siswa dengan akses berbasis peran."
+  },
+  "role": ["Creator", "Contributor"],
+  "status": "active",
+  "featured": true,
+  "techStack": [
+    "TypeScript",
+    "Bun",
+    "ElysiaJS",
+    "Drizzle ORM",
+    "PostgreSQL",
+    "Next.js",
+    "Tailwind CSS",
+    "shadcn/ui"
+  ],
+  "links": {
+    "repo": "https://github.com/rafifhardjaa/LMS"
+  },
+  "order": 2
+}

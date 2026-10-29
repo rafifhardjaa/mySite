@@ -28,7 +28,8 @@ const projects = defineCollection({
       en: z.string(),
       id: z.string(),
     }),
-    role: z.enum(['Creator', 'Maintainer', 'Contributor']),
+    // A project can carry more than one role, e.g. ["Creator", "Contributor"].
+    role: z.array(z.enum(['Creator', 'Maintainer', 'Contributor'])).min(1),
     status: z.enum(['active', 'archived', 'wip']).default('active'),
     featured: z.boolean().default(false),
     techStack: z.array(z.string()),

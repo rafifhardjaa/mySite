@@ -4,19 +4,12 @@
     "en": "A B2B ad network SDK and telemetry backend for HTML5 web games. The client SDK ships as a single dependency-free TypeScript file under 8 KB and is distributed over CDN, while the Node backend records impression and click telemetry in a SQLite database running in WAL mode. Built as an npm workspace monorepo with Docker for deployment.",
     "id": "SDK jaringan iklan B2B beserta backend telemetri untuk game web HTML5. SDK sisi klien dikirim sebagai satu berkas TypeScript tanpa dependensi, berukuran di bawah 8 KB, dan didistribusikan lewat CDN. Backend Node merekam telemetri tayang dan klik di dalam basis data SQLite mode WAL. Dibangun sebagai monorepo npm workspace dengan Docker untuk deployment."
   },
-  "role": "Creator",
+  "role": ["Creator"],
   "status": "active",
   "featured": true,
-  "techStack": [
-    "TypeScript",
-    "Node.js",
-    "Express",
-    "SQLite",
-    "tsup",
-    "Docker"
-  ],
+  "techStack": ["TypeScript", "Node.js", "Express", "SQLite", "tsup", "Docker"],
   "links": {
     "repo": "https://github.com/rafifhardjaa/SdkAds"
   },
-  "order": 4
+  "order": 5
 }
