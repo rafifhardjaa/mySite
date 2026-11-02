@@ -70,11 +70,19 @@ export function localePath(lang: LangKey, path: string): string {
 
   if (!isInternal) return path
 
-  const clean = path === '/' ? '' : path.replace(/\/$/, '')
+  const [beforeQuery, query = ''] = path.split('?')
+  const [pathname, hash = ''] = beforeQuery.split('#')
 
-  if (lang === DEFAULT_LANG) return clean === '' ? '/' : clean
+  const clean = pathname === '/' ? '' : pathname.replace(/\/+$/, '')
+  const lastSegment = clean.split('/').pop() ?? ''
+  // The build uses `trailingSlash: 'always'`. Files keep their extension, while
+  // every page route ends in `/` so internal links never hit a trailing-slash
+  // redirect on the host.
+  const withSlash = clean === '' ? '/' : lastSegment.includes('.') ? clean : `${clean}/`
 
-  return `/id${clean}`
+  const prefixed = lang === DEFAULT_LANG ? withSlash : `/id${withSlash}`
+
+  return `${prefixed}${query ? `?${query}` : ''}${hash ? `#${hash}` : ''}`
 }
 
 /** Strips the `/id` locale prefix from a pathname, e.g. `/id/notes/x` → `/notes/x`. */

@@ -42,7 +42,7 @@ export async function getNotesRss(lang: LangKey, site: URL | string | undefined)
     items: notes.map((note) => ({
       title: note.data.title,
       description: note.data.description,
-      link: `${noteHref(note, lang)}/`,
+      link: noteHref(note, lang),
       pubDate: note.data.publishedAt,
     })),
     customData: `<language>${lang}</language>`,

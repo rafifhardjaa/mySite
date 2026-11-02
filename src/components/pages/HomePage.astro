@@ -20,7 +20,7 @@ const socials = [
   { href: `mailto:${SITE.email}`, icon: 'mail' as const, label: 'Email' },
 ]
 
-const formalName = SITE.name.slice(0, SITE.name.length - SITE.nickname.length).trim()
+const formalName = SITE.homeName.slice(0, SITE.homeName.length - SITE.nickname.length).trim()
 
 const projects = (await getCollection('projects'))
   .filter((p) => p.data.featured)

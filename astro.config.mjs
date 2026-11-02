@@ -6,6 +6,7 @@ import icon from 'astro-icon'
 
 export default defineConfig({
   site: 'https://rafifhardja.xyz',
+  trailingSlash: 'always',
   integrations: [
     mdx(),
     // The root 404.html is excluded automatically; the localised /id/404/

@@ -1,5 +1,7 @@
 export const SITE = {
-  name: 'Abdurrahman Ar Rafif',
+  name: 'Muhammad Abdurrahman Ar Rafif',
+  // Homepage heading only. Metadata keeps the full name above.
+  homeName: 'Abdurrahman Ar Rafif',
   nickname: 'Rafif',
   // Document title. The full name would crowd a browser tab, but the page
   // itself still leads with SITE.name.
@@ -29,7 +31,7 @@ export const SITE = {
   linkedin: 'https://www.linkedin.com/in/muhammad-abdurrahman-ar-rafif-887b263b3',
   instagram: 'https://instagram.com/_rraiff',
   threads: 'https://threads.com/@_rraiff',
-  email: 'abdurrahmanarrafif651@email.com',
+  email: 'abdurrahmanarrafif651@gmail.com',
 } as const
 
 export const NAV_LINKS = [

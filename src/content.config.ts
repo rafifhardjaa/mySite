@@ -9,6 +9,7 @@ const notes = defineCollection({
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
+    category: z.enum(['tech', 'history', 'personal']).default('tech'),
     draft: z.boolean().default(false),
     lang: z.enum(['en', 'id']).default('en'),
     // URL slug for a note. Frontmatter `slug` is a collection-wide key, so an
