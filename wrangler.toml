@@ -8,6 +8,11 @@ compatibility_date = "2026-01-01"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+# Every request goes through worker/contact.ts first. That is what lets the
+# Worker reject hostnames that are not the real site (for example
+# foo.www.rafifhardja.xyz, which a wildcard Custom Domain would otherwise
+# serve with 200) before the assets binding answers.
+run_worker_first = true
 
 # Rate limiting state. Create it once, then put the real id here:
 #   npx wrangler kv namespace create RATE_LIMITER

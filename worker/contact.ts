@@ -3,11 +3,11 @@
 /**
  * Cloudflare Worker — serves the portfolio site and its contact endpoint.
  *
- * The same Worker does both jobs. Requests that match a file in dist/ are
- * served as static assets before this code ever runs (see [assets] in
- * wrangler.toml); only /api/* reaches fetch(). That keeps the contact form
- * same-origin, so there is no cross-site CORS dance — the Origin check below
- * is defense in depth, not the mechanism.
+ * The same Worker does both jobs. `run_worker_first` in wrangler.toml sends
+ * every request through this code: unknown hostnames are rejected with a 404,
+ * and everything except /api/* is handed to the assets binding (dist/). That
+ * keeps the contact form same-origin, so there is no cross-site CORS dance —
+ * the Origin check below is defense in depth, not the mechanism.
  *
  * Besides the contact form there are two more API routes:
  *   GET /api/now-playing — the visitor's latest Last.fm scrobble, so the
@@ -347,6 +347,20 @@ function allowedHostnames(env: Env): string[] {
   return hosts
 }
 
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/**
+ * Hostnames the site may answer on: the apex and www from ALLOWED_ORIGIN,
+ * plus the Worker's own workers.dev URLs and local development. Anything else
+ * — for example foo.www.rafifhardja.xyz, reachable through the wildcard
+ * Custom Domain — must 404 instead of serving the whole site.
+ */
+function isSiteHost(hostname: string, env: Env): boolean {
+  if (LOCAL_HOSTNAMES.has(hostname)) return true
+  if (hostname.endsWith('.workers.dev')) return true
+  return allowedHostnames(env).includes(hostname)
+}
+
 /**
  * Serve a 404 HTML page matching the request locale. If the path starts with
  * `/id`, serve the Indonesian 404; otherwise English. Both are built into the
@@ -365,10 +379,11 @@ async function notFound(request: Request, env: Env): Promise<Response> {
     const assetRequest = new Request(new URL(htmlPath, url.origin).href, request)
     const response = await env.ASSETS.fetch(assetRequest)
     if (response.status === 200) {
-      return new Response(response.body, {
-        status: 404,
-        headers: { ...response.headers },
-      })
+      // Headers is iterable, not a plain object — spread it into a real
+      // Headers so content-type, CSP and the other _headers values survive.
+      const headers = new Headers(response.headers)
+      headers.set('cache-control', 'no-store')
+      return new Response(response.body, { status: 404, headers })
     }
   } catch (err) {
     console.error('404 asset fetch failed', err)
@@ -384,6 +399,22 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
+    // `run_worker_first` puts this code in front of the assets binding, so an
+    // unexpected host must be stopped here. Otherwise a wildcard Custom Domain
+    // (such as *.www.rafifhardja.xyz) answers 200 with the whole site. Keep
+    // this response plain: a hostname that does not exist should not serve the
+    // site's branded 404 page (or touch the asset cache) either.
+    if (!isSiteHost(url.hostname, env)) {
+      return new Response('Not Found', {
+        status: 404,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      })
+    }
+
     if (url.pathname === API_NOW_PLAYING) {
       if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405)
       return nowPlaying(env)
@@ -394,10 +425,12 @@ export default {
       return topTracks(env)
     }
 
-    // Anything that is not the contact API is not ours. With [assets]
-    // configured, static files are served automatically; only non-existent
-    // paths reach here. Serve a locale-aware 404 page.
+    // Everything that is not the contact API is served from dist/. The Worker
+    // now runs first, so hand the request to the assets binding; a miss falls
+    // through to the locale-aware 404 page.
     if (url.pathname !== API_PATH) {
+      const asset = await env.ASSETS.fetch(request)
+      if (asset.status !== 404) return asset
       return notFound(request, env)
     }
 
