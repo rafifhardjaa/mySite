@@ -1,0 +1,16 @@
+{
+  "title": "PidApple",
+  "description": {
+    "en": "A single-page landing site for a curated ex-international iPhone service. Buyers send the model and budget on WhatsApp, and the page lays out the four stages: request, hunting and inspection with 3uTools, a photo and check report before payment, then shipping. Device cards, WhatsApp links, and site data live in one config file, and the build is static through SvelteKit's adapter-static.",
+    "id": "Situs landing satu halaman untuk layanan iPhone eks-inter pilihan. Calon pembeli mengirim seri dan budget lewat WhatsApp, lalu halaman ini menjelaskan empat tahapnya: request unit, pencarian dan pengecekan dengan 3uTools, laporan sebelum bayar, lalu pengiriman. Data unit, tautan WhatsApp, dan data situs disimpan di satu berkas konfigurasi, dan hasil build-nya statis lewat adapter-static SvelteKit."
+  },
+  "role": ["Creator"],
+  "status": "active",
+  "featured": true,
+  "techStack": ["SvelteKit", "Svelte", "TypeScript", "Tailwind CSS", "Vite", "Vercel"],
+  "links": {
+    "live": "https://pidapple.vercel.app/",
+    "repo": "https://github.com/rafifhardjaa/PidApple"
+  },
+  "order": 6
+}
