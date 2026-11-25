@@ -2,6 +2,7 @@
 import DocsLayout from '@/layouts/DocsLayout.astro'
 import { useLocale, localePath, formatShortDate } from '@/i18n/utils'
 import { hasNoteTranslation } from '@/lib/notes'
+import type { ArticleSchema } from '@/lib/schema'
 
 interface Props {
   title: string
@@ -17,6 +18,8 @@ const { title, description, publishedAt, updatedAt, notePath, headings = [] } = 
 const { lang, t } = useLocale(Astro.currentLocale)
 const backHref = localePath(lang, '/notes')
 
+const article: ArticleSchema = { title, description, publishedAt, updatedAt }
+
 // A translation may not exist yet. Pointing the language switch at the other
 // locale anyway produced a 404, so the switch is hidden when nothing is there.
 const otherLang = lang === 'id' ? 'en' : 'id'
@@ -31,6 +34,7 @@ const localeSwitchHref = otherExists ? localePath(otherLang, `/notes/${notePath}
   hasAlternate={otherExists}
   headings={headings}
   tocLabel={t('toc.label')}
+  article={article}
 >
   <header class="mb-12">
     <a

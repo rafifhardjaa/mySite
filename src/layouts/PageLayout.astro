@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar.astro'
 import Footer from '@/components/layout/Footer.astro'
 import TerminalOverlay from '@/components/ui/TerminalOverlay.astro'
 import { getLang } from '@/i18n/utils'
+import type { ArticleSchema } from '@/lib/schema'
 
 interface Props {
   title: string
@@ -11,15 +12,22 @@ interface Props {
   localeSwitchHref?: string | null
   hasAlternate?: boolean
   noindex?: boolean
+  article?: ArticleSchema
 }
 
-const { title, description, localeSwitchHref, hasAlternate, noindex = false } = Astro.props
+const { title, description, localeSwitchHref, hasAlternate, noindex = false, article } = Astro.props
 const lang = getLang(Astro.currentLocale)
 ---
 
-<BaseLayout title={title} description={description} hasAlternate={hasAlternate} noindex={noindex}>
+<BaseLayout
+  title={title}
+  description={description}
+  hasAlternate={hasAlternate}
+  noindex={noindex}
+  article={article}
+>
   <Navbar lang={lang} localeSwitchHref={localeSwitchHref} />
-  <main class="flex-1 pt-14 pb-24 md:pb-0">
+  <main id="main" tabindex="-1" class="flex-1 pt-14 pb-24 md:pb-0 focus:outline-none">
     <slot />
   </main>
   <Footer lang={lang} />

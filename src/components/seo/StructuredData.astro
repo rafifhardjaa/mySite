@@ -1,0 +1,100 @@
+---
+import { SITE } from '@/lib/constants'
+import { localePath, type LangKey } from '@/i18n/utils'
+
+export interface ArticleSchema {
+  title: string
+  description?: string
+  publishedAt: Date
+  updatedAt?: Date
+}
+
+interface Props {
+  canonical: string
+  lang: LangKey
+  article?: ArticleSchema
+}
+
+const { canonical, lang, article } = Astro.props
+
+const origin = new URL(canonical).origin
+const personId = `${origin}/#person`
+const websiteId = `${origin}/#website`
+
+const person = {
+  '@type': 'Person',
+  '@id': personId,
+  name: SITE.name,
+  alternateName: SITE.nickname,
+  url: `${origin}/`,
+  jobTitle: SITE.role[lang],
+  description: SITE.description[lang],
+  email: `mailto:${SITE.email}`,
+  sameAs: [SITE.github, SITE.linkedin, SITE.instagram, SITE.threads],
+  knowsAbout: [
+    'Web development',
+    'TypeScript',
+    'Astro',
+    'React',
+    'Next.js',
+    'PostgreSQL',
+    'Automation',
+  ],
+}
+
+const website = {
+  '@type': 'WebSite',
+  '@id': websiteId,
+  url: `${origin}/`,
+  name: SITE.name,
+  description: SITE.description[lang],
+  publisher: { '@id': personId },
+}
+
+const graph: Record<string, unknown>[] = [person, website]
+
+if (article) {
+  const articleId = `${canonical}#article`
+  graph.push({
+    '@type': 'BlogPosting',
+    '@id': articleId,
+    url: canonical,
+    mainEntityOfPage: canonical,
+    headline: article.title,
+    ...(article.description ? { description: article.description } : {}),
+    datePublished: article.publishedAt.toISOString(),
+    dateModified: (article.updatedAt ?? article.publishedAt).toISOString(),
+    inLanguage: lang,
+    author: { '@id': personId },
+    publisher: { '@id': personId },
+    isPartOf: { '@id': websiteId },
+  })
+
+  graph.push({
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: lang === 'id' ? 'Beranda' : 'Home',
+        item: new URL(localePath(lang, '/'), origin).href,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: lang === 'id' ? 'Catatan' : 'Notes',
+        item: new URL(localePath(lang, '/notes'), origin).href,
+      },
+      { '@type': 'ListItem', position: 3, name: article.title, item: canonical },
+    ],
+  })
+}
+
+// Escape "<" so a title containing "</script>" can never close the tag early.
+const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(
+  /</g,
+  '\\u003c'
+)
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

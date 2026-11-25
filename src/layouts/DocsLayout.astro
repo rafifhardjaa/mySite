@@ -2,6 +2,7 @@
 import PageLayout from '@/layouts/PageLayout.astro'
 import TableOfContents from '@/components/ui/TableOfContents.astro'
 import Icon from '@/components/ui/Icon.astro'
+import type { ArticleSchema } from '@/lib/schema'
 
 export interface TocHeading {
   depth: number
@@ -16,9 +17,18 @@ interface Props {
   tocLabel: string
   localeSwitchHref?: string | null
   hasAlternate?: boolean
+  article?: ArticleSchema
 }
 
-const { title, description, headings = [], tocLabel, localeSwitchHref, hasAlternate } = Astro.props
+const {
+  title,
+  description,
+  headings = [],
+  tocLabel,
+  localeSwitchHref,
+  hasAlternate,
+  article,
+} = Astro.props
 const hasToc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3).length > 1
 ---
 
@@ -27,6 +37,7 @@ const hasToc = headings.filter((heading) => heading.depth === 2 || heading.depth
   description={description}
   localeSwitchHref={localeSwitchHref}
   hasAlternate={hasAlternate}
+  article={article}
 >
   {
     /*

@@ -1,6 +1,8 @@
 ---
 import { SITE } from '@/lib/constants'
-import { getLang, localePath, stripLocalePrefix } from '@/i18n/utils'
+import type { ArticleSchema } from '@/lib/schema'
+import { getLang, localePath, stripLocalePrefix, useTranslation } from '@/i18n/utils'
+import StructuredData from '@/components/seo/StructuredData.astro'
 import '@/styles/global.css'
 
 interface Props {
@@ -11,9 +13,11 @@ interface Props {
   hasAlternate?: boolean
   // Error pages: a direct hit answers 200, so opt out of indexing.
   noindex?: boolean
+  // Note pages: adds BlogPosting and BreadcrumbList to the JSON-LD graph.
+  article?: ArticleSchema
 }
 
-const { title, description, hasAlternate = true, noindex = false } = Astro.props
+const { title, description, hasAlternate = true, noindex = false, article } = Astro.props
 
 // The locale is part of the URL, so the correct language is known before any
 // client script runs. Nothing about language needs to be stored or swapped.
@@ -21,6 +25,7 @@ const lang = getLang(Astro.currentLocale)
 const origin = Astro.site ?? 'https://rafifhardja.xyz'
 const localeFree = stripLocalePrefix(Astro.url.pathname)
 const canonical = new URL(localePath(lang, localeFree), origin).href
+const t = useTranslation(lang)
 ---
 
 <!doctype html>
@@ -32,7 +37,8 @@ const canonical = new URL(localePath(lang, localeFree), origin).href
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#faf9f5" />
     <link rel="canonical" href={canonical} />
-    <meta property="og:type" content="website" />
+    <StructuredData canonical={canonical} lang={lang} article={article} />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={title} />
     {description && <meta property="og:description" content={description} />}
