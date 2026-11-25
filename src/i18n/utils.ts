@@ -42,7 +42,7 @@ export function isLang(value: unknown): value is LangKey {
  * Resolves the locale for the current route.
  *
  * Language lives in the URL (`/notes/x` is English, `/id/notes/x` is Indonesian),
- * so this is a pure function of `Astro.currentLocale` — there is no stored
+ * so this is a pure function of `Astro.currentLocale`: there is no stored
  * preference and no client-side swap to keep in sync.
  */
 export function getLang(currentLocale?: string): LangKey {
@@ -62,7 +62,7 @@ export function useLocale(currentLocale?: string) {
  * Prefixes a path with the locale when it is not the default one.
  *
  * Anything that is not an internal path (absolute URL, `mailto:`, `tel:`, anchor,
- * protocol-relative) is returned untouched — prefixing those produced URLs like
+ * protocol-relative) is returned untouched. Prefixing those produced URLs like
  * `/idmailto:someone@example.com`.
  */
 export function localePath(lang: LangKey, path: string): string {
@@ -137,7 +137,7 @@ export function getLocaleOptions({
  * Content-layer entries are keyed by file path (`entry.id`), so an English
  * note and its Indonesian twin can never share an id. Translations therefore
  * carry `urlPath` instead, and both resolve to the same clean URL in their own
- * locale — for example `silk-road-marketplace.mdx` and
+ * locale, for example `silk-road-marketplace.mdx` and
  * `silk-road-marketplace.id.mdx` both serve `/notes/silk-road-marketplace/`.
  */
 export function noteUrlSlug(note: { id: string; data: { urlPath?: string } }): string {

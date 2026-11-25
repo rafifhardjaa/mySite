@@ -2,8 +2,8 @@
   "kind": "learning",
   "title": { "en": "Go for backends", "id": "Go untuk backend" },
   "note": {
-    "en": "Fast, small binaries and goroutines — aiming for the fastest backend I can ship.",
-    "id": "Biner kecil yang cepat dan goroutine — targetnya backend tercepat yang bisa saya rilis."
+    "en": "Fast, small binaries and goroutines, aiming for the fastest backend I can ship.",
+    "id": "Biner kecil yang cepat dan goroutine, targetnya backend tercepat yang bisa saya rilis."
   },
   "href": "https://go.dev/",
   "status": "active",

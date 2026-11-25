@@ -13,7 +13,7 @@ const notes = defineCollection({
     draft: z.boolean().default(false),
     lang: z.enum(['en', 'id']).default('en'),
     // URL slug for a note. Frontmatter `slug` is a collection-wide key, so an
-    // English note and its Indonesian twin cannot share one — the later entry
+    // English note and its Indonesian twin cannot share one, so the later entry
     // would be dropped. Translations carry `urlPath` instead, for example both
     // `silk-road-marketplace.mdx` and `silk-road-marketplace.id.mdx` resolve to
     // the URL `silk-road-marketplace` in their own locale.
@@ -43,12 +43,12 @@ const projects = defineCollection({
 })
 
 const nowItems = defineCollection({
-  // NOTE: the pattern must stay '**/*.json' — a bare '*.json' silently matches
+  // NOTE: the pattern must stay '**/*.json': a bare '*.json' silently matches
   // nothing and every getCollection('now-items') comes back empty.
   loader: glob({ pattern: '**/*.json', base: './src/content/now-items' }),
   schema: z.object({
     // Which /now section renders this entry. One file per entry, both
-    // languages nested — same bilingual strategy as the projects collection.
+    // languages nested, the same bilingual strategy as the projects collection.
     kind: z.enum(['reading', 'learning', 'listening']),
     title: z.object({
       en: z.string(),
@@ -64,7 +64,7 @@ const nowItems = defineCollection({
     // Internal note links use noteSlug so the locale prefix stays correct.
     href: z.string().url().optional(),
     // Verified store URL for the track (iTunes Store track page, checked by
-    // hand — search misses real tracks, so never guess this). The footer
+    // hand: search misses real tracks, so never guess this). The footer
     // teaser links here instead of /now when present.
     storeHref: z.string().url().optional(),
     // Slug of a note under /notes (urlPath form, e.g. "vibe-coding-answer-or-trap").

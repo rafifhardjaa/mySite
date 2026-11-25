@@ -12,7 +12,7 @@ export async function getNowItems(kind: NowItemKind): Promise<NowItemEntry[]> {
 
 /**
  * Page-level "last updated" stamp: the newest updatedAt across all entries.
- * Bump an entry's updatedAt whenever it changes and the stamp follows —
+ * Bump an entry's updatedAt whenever it changes and the stamp follows:
  * no more hardcoded date literals on the page.
  */
 export async function getNowLastUpdated(): Promise<Date> {

@@ -98,7 +98,7 @@ const tiles = Array.from({ length: cols * cols }, (_, index) => ({
   }
 
   /* Touch screens have no real hover, and a tap leaves :hover stuck. Once a
-     real touch has happened, stuck hover may only close, never open — the
+     real touch has happened, stuck hover may only close, never open, and the
      explicit toggle below owns revealing. Driven by an actual touch event
      rather than the hover media query, so it holds on any browser. */
   .pfp[data-touch]:hover:not([data-show-hover]) .pfp-tile {

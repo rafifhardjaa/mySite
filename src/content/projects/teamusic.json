@@ -1,8 +1,8 @@
 {
   "title": "TeaMusic",
   "description": {
-    "en": "Anonymous song messages. Pick a track, write a note and a vibe, then share it — the recipient opens the link, the song plays, and your name never appears.",
-    "id": "Pesan lagu anonim. Pilih sebuah lagu, tulis catatan beserta vibe-nya, lalu bagikan — penerima membuka tautannya, lagunya terdengar, dan namamu tak pernah muncul."
+    "en": "Anonymous song messages. Pick a track, write a note and a vibe, then share it. The recipient opens the link, the song plays, and your name never appears.",
+    "id": "Pesan lagu anonim. Pilih sebuah lagu, tulis catatan beserta vibe-nya, lalu bagikan. Penerima membuka tautannya, lagunya terdengar, dan namamu tak pernah muncul."
   },
   "role": ["Creator"],
   "status": "active",

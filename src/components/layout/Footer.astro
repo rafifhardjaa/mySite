@@ -30,7 +30,7 @@ const handle = SITE.github.replace(/^https?:\/\/github\.com\//, '@')
 
 // Footer teaser for /now: the top "on repeat" track with its cover.
 // Covers are vendored in src/assets/covers: the audit flags raw <img>,
-// and live artwork search misses real tracks — so each cover is verified
+// and live artwork search misses real tracks, so each cover is verified
 // once by hand and shipped with the site. Keyed by collection entry id
 // (glob ids carry no file extension, e.g. "listening-3").
 const COVERS: Record<string, ImageMetadata> = {
@@ -41,7 +41,7 @@ const COVERS: Record<string, ImageMetadata> = {
 const listening = await getNowItems('listening')
 const nowSpinning = listening[0]
 const cover = nowSpinning ? COVERS[nowSpinning.id] : undefined
-const [track, artist] = (nowSpinning?.data.title[lang] ?? '').split(' — ')
+const [track, artist] = (nowSpinning?.data.title[lang] ?? '').split(' · ')
 // A verified store URL turns the teaser into an outbound music link;
 // otherwise it stays an internal link to /now.
 const teaserHref = nowSpinning?.data.storeHref ?? localePath(lang, '/now')

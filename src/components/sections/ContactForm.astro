@@ -206,7 +206,7 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
 
   let widgetId: string | undefined
 
-  // A token is single-use: after any submit — success or failure — the widget
+  // A token is single-use: after any submit, success or failure, the widget
   // must be reset, or the next submit sends a consumed token and Turnstile
   // starts rejecting a real person.
   function resetWidget(): void {
@@ -224,7 +224,7 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   // narrow screens it bleeds past the card. Scale it down to fit and shrink
   // the wrapper to the scaled height. Everything is measured, never assumed,
   // so any Cloudflare size works; at full width this is a no-op. Transform
-  // does not change layout boxes, hence the explicit height — and reading
+  // does not change layout boxes, hence the explicit height, and reading
   // only the parent width while writing only our own height means the
   // ResizeObserver below cannot feed back into itself.
   function fitTurnstile(): void {
@@ -245,7 +245,7 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   }
 
   // Turnstile is loaded lazily, only when this page actually renders a form.
-  // The token is read fresh from the widget on every submit — a token captured
+  // The token is read fresh from the widget on every submit. A token captured
   // on page load can expire while the visitor is still typing.
   function loadTurnstile(): void {
     if (!widget || !siteKey) return
@@ -282,8 +282,8 @@ const isConfigured = Boolean(endpoint && turnstileSiteKey)
   }
 
   // Worker error codes get their own message wherever the visitor can tell
-  // the stages apart. Anything unlisted — including codes added by a future
-  // worker — falls back to the generic failure so the form never shows a
+  // the stages apart. Anything unlisted, including codes added by a future
+  // worker, falls back to the generic failure so the form never shows a
   // blank status.
   function workerMessage(code: string): MessageKey {
     switch (code) {
