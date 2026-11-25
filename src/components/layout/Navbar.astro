@@ -22,7 +22,7 @@ const currentRoute = currentPath !== '/' ? currentPath.replace(/\/$/, '') : curr
 
 // Exact match, plus section match: a note page lives under /notes, so the
 // Notes entry stays lit there. A locale root ("/" or "/id") never
-// prefix-matches — every route on that locale starts with one, so without
+// prefix-matches: every route on that locale starts with one, so without
 // this guard Home would light up on every Indonesian page.
 const isActiveRoute = (href: string): boolean => {
   if (currentRoute === href) return true
@@ -47,7 +47,7 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
   class="fixed inset-x-0 top-0 z-50 hidden px-6 pt-4 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:block"
 >
   <div
-    class="nav-pill mx-auto flex layout-container items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-5 py-2 shadow-sm shadow-black/5 backdrop-blur-xl"
+    class="nav-pill mx-auto flex layout-container items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-5 py-1 shadow-sm shadow-black/5 backdrop-blur-xl"
   >
     <div class="flex items-center gap-5">
       {
@@ -86,7 +86,7 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
           title="Settings"
           aria-expanded="false"
           aria-controls="settings-menu-desktop"
-          class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
+          class="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
         >
           <Icon name="sliders" class="h-[18px] w-[18px] text-text" />
         </button>
@@ -108,7 +108,7 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
   <div
     class="mx-auto flex max-w-md items-center justify-between rounded-[2rem] border border-border bg-bg/85 px-3 py-2 shadow-lg shadow-black/5 backdrop-blur-xl"
   >
-    <div class="flex items-center gap-0.5">
+    <div class="flex min-w-0 flex-1 items-center gap-0.5">
       {
         dockLinks.map((link) => {
           const href = localePath(lang, link.href)
@@ -119,20 +119,23 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
               aria-label={t(link.key)}
               aria-current={active ? 'page' : undefined}
               class:list={[
-                'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+                'flex h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1 transition-colors',
                 active
                   ? 'bg-bg-subtle text-accent'
                   : 'text-text-muted hover:bg-bg-subtle hover:text-text',
               ]}
             >
               <Icon name={navIcons[link.href as keyof typeof navIcons]} class="h-[18px] w-[18px]" />
+              <span class="w-full truncate text-center text-[10px] leading-none max-[359px]:hidden">
+                {t(link.key)}
+              </span>
             </a>
           )
         })
       }
     </div>
 
-    <div class="relative flex items-center gap-0.5">
+    <div class="relative flex shrink-0 items-center gap-0.5">
       <ThemeToggle />
       <button
         type="button"
@@ -141,7 +144,7 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
         title="Settings"
         aria-expanded="false"
         aria-controls="settings-menu-mobile"
-        class="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
+        class="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-bg-subtle data-[open]:bg-bg-subtle"
       >
         <Icon name="sliders" class="h-[18px] w-[18px] text-text" />
       </button>
@@ -156,7 +159,7 @@ const dockLinks = NAV_LINKS.filter((link) => link.href in navIcons)
 </div>
 
 <style>
-  /* Morphing sticky nav: same centered width in both states — only the
+  /* Morphing sticky nav: same centered width in both states, only the
      surface morphs (transparent at the top, condensed floating pill once
      scrolled past MORPH_OFFSET, see script below). Keeping the width fixed
      avoids layout shift and keeps the bar aligned with the page content.

@@ -84,6 +84,9 @@ const t = useTranslation(lang)
         localStorage.getItem('theme') ??
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       document.documentElement.classList.toggle('dark', theme === 'dark')
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute('content', theme === 'dark' ? '#141413' : '#faf9f5')
 
       const layout = localStorage.getItem('layout') ?? 'default'
       document.documentElement.setAttribute('data-layout', layout)
@@ -95,6 +98,11 @@ const t = useTranslation(lang)
     </script>
   </head>
   <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:border focus:border-border focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-text focus:shadow-lg"
+      >{t('a11y.skip')}</a
+    >
     <slot />
   </body>
 </html>
