@@ -11,7 +11,7 @@ const { lang, t } = useLocale(Astro.currentLocale)
 <PageLayout title={t('contact.navLabel')} description={SITE.description[lang]}>
   <div class={PAGE_CONTAINER_CLASS}>
     <SectionLabel label={t('contact.navLabel')} class="mb-6" />
-    <h1 class="mb-4 text-3xl font-semibold">{t('contact.heading')}</h1>
+    <h1 class="mb-4 text-3xl font-semibold sm:text-4xl">{t('contact.heading')}</h1>
     <p class="mb-12 max-w-prose leading-relaxed text-text-muted">{t('contact.body')}</p>
     <ContactForm lang={lang} />
   </div>

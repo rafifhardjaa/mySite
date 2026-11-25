@@ -43,7 +43,7 @@ const localeSwitchHref = otherExists ? localePath(otherLang, `/notes/${notePath}
     >
       ← {t('note.backToNotes')}
     </a>
-    <h1 class="mb-4 text-3xl font-semibold">{title}</h1>
+    <h1 class="mb-4 text-3xl font-semibold sm:text-4xl">{title}</h1>
     <div class="flex items-center gap-4 text-sm text-text-muted">
       <time>{formatShortDate(publishedAt, lang)}</time>
       {

@@ -43,8 +43,8 @@ const noteDates = notes.map((n) => formatShortDate(n.data.publishedAt, lang))
         <h1 class="mb-4 text-3xl font-semibold sm:text-4xl">
           {formalName}<span class="text-accent">{' '}{SITE.nickname}</span>
         </h1>
-        <p class="text-lg text-text-muted leading-relaxed">{SITE.bio[lang]}</p>
-        <p class="mt-3 flex items-start gap-2 font-mono-jb text-xs italic text-text-subtle">
+        <p class="max-w-[62ch] text-lg leading-relaxed text-text-muted">{SITE.bio[lang]}</p>
+        <p class="mt-3 flex items-start gap-2 text-sm text-text-subtle">
           <span
             class="mt-[0.5em] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
             aria-hidden="true"></span>

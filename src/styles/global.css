@@ -1,8 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist';
-@import '@fontsource/geist-mono';
+@import '@fontsource-variable/geist/wght-italic.css';
 @import '@fontsource/jetbrains-mono/latin-400.css';
-@import '@fontsource/jetbrains-mono/latin-400-italic.css';
 @import '@fontsource/jetbrains-mono/latin-500.css';
 @import '@fontsource-variable/newsreader';
 @plugin '@tailwindcss/typography';
@@ -17,10 +16,10 @@
   --color-text: #2a2523;
   --color-text-muted: #6f6862;
   --color-text-subtle: #756e66;
-  --color-accent: #c25e38;
-  --color-accent-hover: #a84e2c;
+  --color-accent: #a84b2a;
+  --color-accent-hover: #8f3d20;
   --font-sans: 'Geist Variable', system-ui, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-mono-jb: 'JetBrains Mono', ui-monospace, monospace;
   --font-serif: 'Newsreader Variable', Georgia, serif;
 }
@@ -45,7 +44,34 @@
   h3,
   h4 {
     font-family: var(--font-serif);
+    font-optical-sizing: auto;
     letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Display sizes need more negative tracking than body headings. */
+  h1,
+  h2 {
+    letter-spacing: -0.02em;
+  }
+
+  /* Long-form copy reads better slightly looser than Tailwind's 1.5 default.
+     Utilities such as leading-snug still win where a tighter set is wanted. */
+  p,
+  li {
+    line-height: 1.65;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-serif {
+    font-optical-sizing: auto;
   }
 }
 
@@ -178,7 +204,25 @@
 .prose h2,
 .prose h3 {
   font-family: var(--font-serif);
+  font-optical-sizing: auto;
   letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* Notes are long enough that 17px reads noticeably better than the 16px
+   default, and the inline code shares the site's single mono family. */
+.prose {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.prose :where(p, li) {
+  text-wrap: pretty;
+}
+
+.prose :where(code):not(:where(pre code)) {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
 }
 
 @media (prefers-reduced-motion: reduce) {
