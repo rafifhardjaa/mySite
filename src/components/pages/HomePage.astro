@@ -29,6 +29,9 @@ const projects = (await getCollection('projects'))
 const allNotes = await getPublishedNotes(lang)
 const notes = allNotes.slice(0, 5)
 const totalNotes = allNotes.length
+const featuredProjects = projects.slice(0, 3)
+const moreProjects = projects.slice(3)
+const noteDates = notes.map((n) => formatShortDate(n.data.publishedAt, lang))
 ---
 
 <PageLayout title={SITE.identity[lang]} description={SITE.description[lang]}>
@@ -75,10 +78,17 @@ const totalNotes = allNotes.length
         <section class="mb-20">
           <SectionLabel label={t('home.projects.heading')} class="mb-8" />
           <div class="space-y-6">
-            {projects.map((project) => (
+            {featuredProjects.map((project) => (
               <ProjectCard project={project} lang={lang} />
             ))}
           </div>
+          {moreProjects.length > 0 && (
+            <div class="mt-2">
+              {moreProjects.map((project) => (
+                <ProjectCard project={project} lang={lang} compact />
+              ))}
+            </div>
+          )}
         </section>
       )
     }
@@ -89,18 +99,23 @@ const totalNotes = allNotes.length
           <SectionLabel label={t('home.notes.heading')} class="mb-3" />
           <p class="mb-8 max-w-[70ch] text-text-muted">{t('home.notes.body')}</p>
           <ul class="border-t border-border">
-            {notes.map((note) => (
+            {notes.map((note, index) => (
               <li class="border-b border-border">
                 <a
                   href={noteHref(note, lang)}
                   class="group flex items-baseline gap-3 py-4 sm:gap-4"
                 >
-                  <time class="w-28 shrink-0 font-mono text-sm whitespace-nowrap text-text-muted">
-                    {formatShortDate(note.data.publishedAt, lang)}
-                  </time>
-                  <span aria-hidden="true" class="text-text-subtle">
-                    —
-                  </span>
+                  {noteDates[index] === noteDates[index - 1] ? (
+                    // The 7rem slot stays so grouped rows keep the title column
+                    // aligned; only the repeated date is hidden.
+                    <span class="w-28 shrink-0">
+                      <time class="sr-only">{noteDates[index]}</time>
+                    </span>
+                  ) : (
+                    <time class="w-28 shrink-0 font-mono text-sm whitespace-nowrap text-text-muted">
+                      {noteDates[index]}
+                    </time>
+                  )}
                   <span class="font-serif text-xl leading-snug transition-colors group-hover:text-accent">
                     {note.data.title}
                   </span>
